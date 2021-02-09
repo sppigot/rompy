@@ -2,7 +2,7 @@
 numpy
 xarray
 intake
-intake-netcdf==3.1.0
+intake-xarray==0.3.1
 fsspec
 cookiecutter
 dask
