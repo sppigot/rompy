@@ -1,0 +1,20 @@
+# List required packages in this file, one per line.
+xarray
+intake
+fsspec
+cookiecutter
+dask
+h5py
+netcdf4
+toolz
+tqdm
+paramiko
+wavespectra
+cartopy
+sklearn
+sympy
+pandas
+numpy
+scipy
+matplotlib
+owslib
