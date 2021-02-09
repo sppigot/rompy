@@ -1,4 +1,5 @@
 # List required packages in this file, one per line.
+numpy
 xarray
 intake
 fsspec
@@ -10,11 +11,9 @@ toolz
 tqdm
 paramiko
 wavespectra
-cartopy
 sklearn
 sympy
 pandas
-numpy
 scipy
 matplotlib
 owslib
