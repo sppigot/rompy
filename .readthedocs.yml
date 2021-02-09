@@ -9,6 +9,6 @@ version: 2
 sphinx:
    configuration: docs/source/conf.py
 
-conda:
+pip:
     file: docs/environment.yml
 
