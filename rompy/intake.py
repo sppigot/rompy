@@ -72,8 +72,10 @@ class NetCDFFCStackSource(DataSourceMixin):
     def __init__(self, urlpath, fn_fmt='', fmt_fields=None, url_replace=None, ds_filters=None,
                  startdt = None, enddt = None, hindcast = False,
                  chunks=None, xarray_kwargs=None, metadata=None,
-                 path_as_pattern=True, storage_options=None, **kwargs):
-        self.urlpath = urlpath
+                 storage_options=None, **kwargs):
+        
+        super(NetCDFFCStackSource, self).__init__(metadata=metadata, **kwargs)
+
         self.fn_fmt = fn_fmt
         self.url_replace = url_replace or {}
         self.fmt_fields = fmt_fields or {}
@@ -81,121 +83,117 @@ class NetCDFFCStackSource(DataSourceMixin):
         self.startdt = startdt
         self.enddt = enddt
         self.hindcast = hindcast
-        self.chunks = chunks
+        self.chunks = chunks or {}
         self.xarray_kwargs = xarray_kwargs or {}
         self._ds = None
+        self.deterministic_pattern = True
+        self.urlpath = urlpath
+        # print(f'Scanning urlpath={urlpath}\n fn_fmt={fn_fmt}')
+        # self.urlpath = walk_server(urlpath, self.fn_fmt, self.fmt_fields, self.url_replace)
+        # print(f'Found {len(self.urlpath)}')
+        # if len(self.urlpath) < 1:
+        #     raise ValueError('No URLs returned from scan')
+        
+        
+    
+    @property
+    def deterministic_pattern(self):
+        if hasattr(self, '_deterministic_pattern'):
+            return self._deterministic_pattern
+        raise KeyError('Plugin needs to set `deterministic_pattern`'
+                       ' before setting urlpath')
 
-        self._filter_fns = {'sort': self._sort_filter,
-                            'subset': self._subset_filter,
-                            'crop': self._crop_filter,
-                            'timenorm': self._timenorm_filter,
-                            'rename':self._rename_filter}
+    @deterministic_pattern.setter
+    def deterministic_pattern(self, deterministic_pattern):
+        self._deterministic_pattern = deterministic_pattern
 
-        super(NetCDFFCStackSource, self).__init__(metadata=metadata, **kwargs)
+    @property
+    def urlpath(self):
+        return self._urlpath
 
-    def _sort_filter(self,ds,coords):
-        for c in coords:
-            if c in ds:
-                ds = ds.sortby(c)
-        return ds
+    @urlpath.setter
+    def urlpath(self, urlpath):
+        from .utils import walk_server
 
-    def _subset_filter(self,ds,data_vars):
-        if data_vars is not None:
-            ds = ds[data_vars]
-        return ds
+        if hasattr(self, '_original_urlpath'):
+            self._urlpath = urlpath
+            return
 
-    def _crop_filter(self,ds,bbox):
-        if bbox is not None:
-            this_crop = {k:bbox[k] for k in bbox.keys() if k in ds.dims.keys()}
-            ds = ds.sel(this_crop)
-        return ds
+        self._original_urlpath = urlpath
 
-    def _timenorm_filter(self,ds,interval='1 h'):
-        interval = to_timedelta(interval)
-        ds['init_time'] = ds['time'][0]
-        ds['lead_time'] = (ds['time']-ds['time'][0])/interval
-        ds = ds.set_coords('init_time')
-        ds = ds.swap_dims({'time':'lead_time'})
-        return ds
+        if self.deterministic_pattern:
+            print(f'Scanning urlpath={urlpath}\n fn_fmt={self.fn_fmt}')
+            self._urlpath = walk_server(urlpath, self.fn_fmt, self.fmt_fields, self.url_replace)
+            print(f'Found {len(self.urlpath)}')
+        else:
+            self._urlpath = urlpath
 
-    def _rename_filter(self,ds,varmap):
-        ds = ds.rename(varmap)
-        return ds
-
-    def _walk_http_server(self):
-        # from fsspec.implementations.http import HTTPFileSystem
-        from fsspec import filesystem
-        from fsspec.utils import get_protocol
-        from os.path import dirname
-        from functools import reduce
-        from operator import iconcat
-        from dask import delayed, compute
-        import dask.config as dc
-        from .utils import dict_product
-
-        # Targetted scans of the file system based on date range
-        test_urls = set([self.urlpath.format(**pv) for pv in dict_product(self.fmt_fields)])
-        test_fns = set([self.fn_fmt.format(**pv) for pv in dict_product(self.fmt_fields)])
-
-        fs = filesystem(get_protocol(self.urlpath))
-
-        def check_url(fs,test_url,test_fns):
-            urls = []
-            if fs.exists(test_url):
-                for url, _ , links in fs.walk(test_url):
-                    urls += [dirname(url) + '/' + fn for fn in links if fn in test_fns]
-            return urls
-
-        with dc.set(scheduler='threads'):
-            valid_urls = compute(*[delayed(check_url)(fs,test_url,test_fns) for test_url in test_urls])
-        valid_urls = sorted(reduce(iconcat,valid_urls,[]))
-
-        for f,r in self.url_replace.items():
-            valid_urls = [u.replace(f,r) for u in valid_urls]
-
-        return valid_urls 
-
+        if isinstance(self.deterministic_pattern, bool):
+            if isinstance(urlpath, str) and self._urlpath == urlpath:
+                self.deterministic_pattern = False
+    
     def _open_dataset(self):
         import xarray as xr
         from dask import delayed, compute
         import dask.config as dc
-
-        def _open_single_dataset(url,filters):
-            ds = xr.open_dataset(url,chunks={}, **self.xarray_kwargs)
-            for fn, params in filters.items():
-                if isinstance(fn,str):
-                    fn = self._filter_fns[fn]
-                ds = fn(ds,params)
-            return ds
-
-        urls = self._walk_http_server()
+        from .filters import _open_preprocess
 
         # Ensure a time normalisation filter is applied to each dataset
-        if ('timenorm' not in self.ds_filters.keys()) and (self._timenorm_filter not in self.ds_filters.keys()):
-            self.ds_filters[self._timenorm_filter]='1h'
+        from .filters import timenorm_filter
+        if ('timenorm' not in self.ds_filters.keys()) and (timenorm_filter not in self.ds_filters.keys()):
+            self.ds_filters[timenorm_filter]='1h'
 
-        with dc.set(scheduler='threads'):
-            dsets = compute([delayed(_open_single_dataset)(url,self.ds_filters) for url in urls])[0]
+        # def _preprocess(ds,filters):
+        #     from .filters import get_filter_fns
 
-        if len(urls) == 0:
-            raise ValueError(f'No urls matched for query: {self}')
-        elif len(urls) > 1:
-            ds = xr.concat(dsets, dim='init_time')
+        #     # filters={'subset':['hs']}
+
+        #     filter_fns = get_filter_fns()
+        #     for fn, params in filters.items():
+        #         if isinstance(fn,str):
+        #             fn = filter_fns[fn]
+        #         ds = fn(ds,params)
+        #     return ds
+        # _preprocess_fn=lambda ds:_preprocess(ds,self.ds_filters)
+
+        # _preprocess_fn=lambda ds:_preprocess(ds)
+
+        
+        # _open_preprocess_fn=lambda url:_open_preprocess(url,self.chunks,self.ds_filters,self.xarray_kwargs)
+
+
+        if isinstance(self.urlpath,list):
+            if len(self.urlpath) == 0:
+                raise ValueError(f'No urls matched for query: {self}')
+            elif len(self.urlpath) == 1:
+                # ds = xr.open_dataset(self.urlpath[0],chunks=self.chunks,**self.xarray_kwargs)
+                ds = _open_preprocess(self.urlpath[0],self.chunks,self.ds_filters,self.xarray_kwargs)
+                ds = ds.expand_dims('init')
+            elif len(self.urlpath) > 1:
+                # NOTE: open_mfdataset gives non-deterministic results when using 
+                # distributed scheduler
+                # ds = xr.open_mfdataset(self.urlpath, 
+                #                        concat_dim='init', 
+                #                        combine='nested', 
+                #                        preprocess=_preprocess_fn,
+                #                        parallel=True,
+                #                        **self.xarray_kwargs)
+                __open_preprocess=delayed(_open_preprocess)
+                futures = [__open_preprocess(url,self.chunks,self.ds_filters,self.xarray_kwargs) for url in self.urlpath]
+                dsets = compute(*futures,traverse=False)
+                ds = xr.concat(dsets, dim='init')
         else:
-            logger.info(f'Only one URL returned: {urls}')
-            ds = dsets[0]
-            ds = ds.expand_dims('init_time')
+            raise ValueError('Internal error. Expected urlpath path pattern string to have been expanded to a list')
 
-        ds = ds.stack(forecast_time=['init_time','lead_time'])
+        # print(ds)
+        # ds = ds.stack(forecast_time=['init','lead'])
 
         if self.hindcast:
-            max_init_time = ds['init_time'].groupby('time').max()
-            min_lead_time = ds['lead_time'].groupby('time').min()
+            ds = ds.stack(forecast_time=['init','lead'])
+            max_init_time = ds['init'].groupby('time').max()
+            min_lead_time = ds['lead'].groupby('time').min()
             ds = ds.sel(forecast_time=list(zip(max_init_time.values, min_lead_time.values)))
             ds = ds.reset_index('forecast_time').rename({'forecast_time':'time'})
-        else:
-            ds = ds.reset_index('forecast_time')
-            ds = ds.swap_dims({'forecast_time':'time'})
             
         # Finally return the composed dataset, cropped back to cover the requested time period
         if self.startdt is not None:
