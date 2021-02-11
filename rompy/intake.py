@@ -74,8 +74,6 @@ class NetCDFFCStackSource(DataSourceMixin):
                  chunks=None, xarray_kwargs=None, metadata=None,
                  storage_options=None, **kwargs):
         
-        super(NetCDFFCStackSource, self).__init__(metadata=metadata, **kwargs)
-
         self.fn_fmt = fn_fmt
         self.url_replace = url_replace or {}
         self.fmt_fields = fmt_fields or {}
@@ -88,14 +86,10 @@ class NetCDFFCStackSource(DataSourceMixin):
         self._ds = None
         self.deterministic_pattern = True
         self.urlpath = urlpath
-        # print(f'Scanning urlpath={urlpath}\n fn_fmt={fn_fmt}')
-        # self.urlpath = walk_server(urlpath, self.fn_fmt, self.fmt_fields, self.url_replace)
-        # print(f'Found {len(self.urlpath)}')
-        # if len(self.urlpath) < 1:
-        #     raise ValueError('No URLs returned from scan')
-        
-        
-    
+
+        super(NetCDFFCStackSource, self).__init__(metadata=metadata, **kwargs)
+
+    # Replicating intakes PatternMixin
     @property
     def deterministic_pattern(self):
         if hasattr(self, '_deterministic_pattern'):
@@ -143,25 +137,6 @@ class NetCDFFCStackSource(DataSourceMixin):
         if ('timenorm' not in self.ds_filters.keys()) and (timenorm_filter not in self.ds_filters.keys()):
             self.ds_filters[timenorm_filter]='1h'
 
-        # def _preprocess(ds,filters):
-        #     from .filters import get_filter_fns
-
-        #     # filters={'subset':['hs']}
-
-        #     filter_fns = get_filter_fns()
-        #     for fn, params in filters.items():
-        #         if isinstance(fn,str):
-        #             fn = filter_fns[fn]
-        #         ds = fn(ds,params)
-        #     return ds
-        # _preprocess_fn=lambda ds:_preprocess(ds,self.ds_filters)
-
-        # _preprocess_fn=lambda ds:_preprocess(ds)
-
-        
-        # _open_preprocess_fn=lambda url:_open_preprocess(url,self.chunks,self.ds_filters,self.xarray_kwargs)
-
-
         if isinstance(self.urlpath,list):
             if len(self.urlpath) == 0:
                 raise ValueError(f'No urls matched for query: {self}')
@@ -184,9 +159,6 @@ class NetCDFFCStackSource(DataSourceMixin):
                 ds = xr.concat(dsets, dim='init')
         else:
             raise ValueError('Internal error. Expected urlpath path pattern string to have been expanded to a list')
-
-        # print(ds)
-        # ds = ds.stack(forecast_time=['init','lead'])
 
         if self.hindcast:
             ds = ds.stack(forecast_time=['init','lead'])

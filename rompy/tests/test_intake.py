@@ -21,10 +21,6 @@ def test_intake_local():
     from intake.catalog.local import LocalCatalogEntry
     import pandas as pd
 
-    from distributed import LocalCluster, Client
-    client=Client(LocalCluster())
-    print(client)
-
     mycat = Catalog.from_dict({
     'test': LocalCatalogEntry('test', 'test fc stack', 'netcdf_fcstack', 
                             args={'urlpath': os.path.dirname(os.path.abspath(__file__)) + '/data/{dt}.000000/',
