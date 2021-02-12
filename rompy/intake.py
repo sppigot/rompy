@@ -116,9 +116,9 @@ class NetCDFFCStackSource(DataSourceMixin):
         self._original_urlpath = urlpath
 
         if self.deterministic_pattern:
-            print(f'Scanning urlpath={urlpath}\n fn_fmt={self.fn_fmt}')
+            logger.info(f'Scanning urlpath={urlpath}\n fn_fmt={self.fn_fmt}')
             self._urlpath = walk_server(urlpath, self.fn_fmt, self.fmt_fields, self.url_replace)
-            print(f'Found {len(self.urlpath)}')
+            logger.info(f'Found {len(self.urlpath)}')
         else:
             self._urlpath = urlpath
 
