@@ -156,7 +156,10 @@ class NetCDFFCStackSource(DataSourceMixin):
                 __open_preprocess=delayed(_open_preprocess)
                 futures = [__open_preprocess(url,self.chunks,self.ds_filters,self.xarray_kwargs) for url in self.urlpath]
                 dsets = compute(*futures,traverse=False)
-                ds = xr.concat(dsets, dim='init')
+                ds = xr.concat(dsets, dim='init', 
+                                      coords=['time'], 
+                                      compat="override", 
+                                      combine_attrs="override")
         else:
             raise ValueError('Internal error. Expected urlpath path pattern string to have been expanded to a list')
 
