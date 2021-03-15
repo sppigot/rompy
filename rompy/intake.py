@@ -7,11 +7,13 @@
 #-----------------------------------------------------------------------------
 
 from intake_xarray.base import DataSourceMixin
-from pandas import to_timedelta
+from pandas import to_timedelta, to_datetime
 
 import logging
 
 logger = logging.getLogger('rompy.intake')
+
+
 
 class NetCDFFCStackSource(DataSourceMixin):
     """An extension of intake-xarray in an opinionated fashion to open a stack of forecast model results stored as netcdf using xarray.
@@ -45,7 +47,7 @@ class NetCDFFCStackSource(DataSourceMixin):
         Examples:
             - {'rename':{'dir':'mean_dir'},
                'sort':['direction'],
-               'timenorm':'1H',
+               'timenorm':'hour',
                'crop':{'lon':slice(-32.2,-33.2),
                        'lat':slice(114.,115.)}
                }
@@ -78,8 +80,8 @@ class NetCDFFCStackSource(DataSourceMixin):
         self.url_replace = url_replace or {}
         self.fmt_fields = fmt_fields or {}
         self.ds_filters = ds_filters or {}
-        self.startdt = startdt
-        self.enddt = enddt
+        self.startdt = to_datetime(startdt)
+        self.enddt = to_datetime(enddt)
         self.hindcast = hindcast
         self.chunks = chunks or {}
         self.xarray_kwargs = xarray_kwargs or {}
@@ -135,24 +137,15 @@ class NetCDFFCStackSource(DataSourceMixin):
         # Ensure a time normalisation filter is applied to each dataset
         from .filters import timenorm_filter
         if ('timenorm' not in self.ds_filters.keys()) and (timenorm_filter not in self.ds_filters.keys()):
-            self.ds_filters[timenorm_filter]='1h'
+            self.ds_filters[timenorm_filter]='hour'
 
         if isinstance(self.urlpath,list):
             if len(self.urlpath) == 0:
                 raise ValueError(f'No urls matched for query: {self}')
             elif len(self.urlpath) == 1:
-                # ds = xr.open_dataset(self.urlpath[0],chunks=self.chunks,**self.xarray_kwargs)
                 ds = _open_preprocess(self.urlpath[0],self.chunks,self.ds_filters,self.xarray_kwargs)
                 ds = ds.expand_dims('init')
             elif len(self.urlpath) > 1:
-                # NOTE: open_mfdataset gives non-deterministic results when using 
-                # distributed scheduler
-                # ds = xr.open_mfdataset(self.urlpath, 
-                #                        concat_dim='init', 
-                #                        combine='nested', 
-                #                        preprocess=_preprocess_fn,
-                #                        parallel=True,
-                #                        **self.xarray_kwargs)
                 __open_preprocess=delayed(_open_preprocess)
                 futures = [__open_preprocess(url,self.chunks,self.ds_filters,self.xarray_kwargs) for url in self.urlpath]
                 dsets = compute(*futures,traverse=False)
@@ -169,11 +162,20 @@ class NetCDFFCStackSource(DataSourceMixin):
             min_lead_time = ds['lead'].groupby('time').min()
             ds = ds.sel(forecast_time=list(zip(max_init_time.values, min_lead_time.values)))
             ds = ds.reset_index('forecast_time').rename({'forecast_time':'time'})
-            
-        # Finally return the composed dataset, cropped back to cover the requested time period
-        if self.startdt is not None:
-            ds = ds.sel(time=slice(self.startdt,self.enddt))
 
+            # Finally return the composed dataset, cropped back to cover the requested time period
+            if self.startdt is not None:
+                ds = ds.sel(time=slice(self.startdt,self.enddt))
+
+        else:
+
+            # Finally return the composed dataset, cropped back to cover the requested time period
+            if self.startdt is not None:
+                inds = ds.time >= self.startdt
+                if self.enddt is not None:
+                    inds = inds & (ds.time <= self.enddt)
+                ds = ds.where(inds,drop=True)
+            
         self._ds = ds
 
 
