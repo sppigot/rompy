@@ -23,11 +23,12 @@ def crop_filter(ds,bbox):
         ds = ds.sel(this_crop)
     return ds
 
-def timenorm_filter(ds,interval='1 h'):
+def timenorm_filter(ds,interval='hour'):
     from pandas import to_timedelta
-    interval = to_timedelta(interval)
+    dt = to_timedelta('1 ' + interval)
     ds['init'] = ds['time'][0]
-    ds['lead'] = (ds['time']-ds['time'][0])/interval
+    ds['lead'] = ((ds['time']-ds['time'][0])/dt).astype('int')
+    ds['lead'].attrs['units'] = interval
     ds = ds.set_coords('init')
     ds = ds.swap_dims({'time':'lead'})
     return ds
