@@ -21,3 +21,10 @@ sources:
     description: 'WA Department of Transport Dataset Catalog'
     driver: intake.catalog.local.YAMLFileCatalog
     metadata: {}
+
+  aodn:
+    args:
+      path: "{{CATALOG_DIR}}aodn.yaml"
+    description: 'WA Department of Transport Dataset Catalog'
+    driver: intake.catalog.local.YAMLFileCatalog
+    metadata: {}
