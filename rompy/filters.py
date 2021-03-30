@@ -23,11 +23,14 @@ def crop_filter(ds,bbox):
         ds = ds.sel(this_crop)
     return ds
 
-def timenorm_filter(ds,interval='hour'):
-    from pandas import to_timedelta
+def timenorm_filter(ds,interval='hour',reftime=None):
+    from pandas import to_timedelta, to_datetime
     dt = to_timedelta('1 ' + interval)
-    ds['init'] = ds['time'][0]
-    ds['lead'] = ((ds['time']-ds['time'][0])/dt).astype('int')
+    if reftime is None:
+        ds['init'] = ds['time'][0]
+    else:
+        ds['init'] = (('time',),to_datetime(ds[reftime].values))
+    ds['lead'] = ((ds['time']-ds['init'])/dt).astype('int')
     ds['lead'].attrs['units'] = interval
     ds = ds.set_coords('init')
     ds = ds.swap_dims({'time':'lead'})
@@ -51,5 +54,5 @@ def _open_preprocess(url,chunks,filters,xarray_kwargs):
     for fn, params in filters.items():
         if isinstance(fn,str):
             fn = filter_fns[fn]
-        ds = fn(ds,params)
+        ds = fn(ds,**params)
     return ds

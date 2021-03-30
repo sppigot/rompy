@@ -6,6 +6,7 @@
 # The full license is in the LICENSE file, distributed with this software.
 #-----------------------------------------------------------------------------
 
+from re import T
 from intake_xarray.base import DataSourceMixin
 from pandas import to_timedelta, to_datetime
 
@@ -137,7 +138,7 @@ class NetCDFFCStackSource(DataSourceMixin):
         # Ensure a time normalisation filter is applied to each dataset
         from .filters import timenorm_filter
         if ('timenorm' not in self.ds_filters.keys()) and (timenorm_filter not in self.ds_filters.keys()):
-            self.ds_filters[timenorm_filter]='hour'
+            self.ds_filters[timenorm_filter]={'interval':'hour'}
 
         if isinstance(self.urlpath,list):
             if len(self.urlpath) == 0:
@@ -149,6 +150,19 @@ class NetCDFFCStackSource(DataSourceMixin):
                 __open_preprocess=delayed(_open_preprocess)
                 futures = [__open_preprocess(url,self.chunks,self.ds_filters,self.xarray_kwargs) for url in self.urlpath]
                 dsets = compute(*futures,traverse=False)
+                if len(dsets[0].lead) == 1: # Assumes this indicates that each timestep of forecase is separate file
+                    inits = [to_datetime(ds.init.values[0]) for ds in dsets]
+                    dsets_concat = []
+                    for i in set(inits):
+                        subset = [ds for ds in dsets if ds.init.values[0] == i]
+                        ds_concat = xr.concat(subset,
+                                              dim='lead',
+                                              coords=['time'],
+                                              compat="override", 
+                                              combine_attrs="override")
+                        ds_concat['init'] = (('init',), [i,])
+                        dsets_concat.append(ds_concat)
+                    dsets = dsets_concat
                 ds = xr.concat(dsets, dim='init', 
                                       coords=['time'], 
                                       compat="override", 
