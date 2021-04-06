@@ -23,24 +23,40 @@ sources:
       catalog_dir: ''
   nrt_wave_altimetry:
     args:
-      urlpath: http://geoserver-123.aodn.org.au/geoserver/ows?service=WFS&request=GetFeature&version=1.0.0&workspace=imos&typeName=srs_surface_waves_altimetry_map&CQL_FILTER=INTERSECTS(geom,{{ geom|urlencode }})
+       urlpath: http://geoserver-123.aodn.org.au/geoserver/ows?service=WFS&request=GetFeature&version=1.0.0&workspace=imos&typeName=srs_surface_waves_altimetry_map&CQL_FILTER=INTERSECTS(geom,{{ geom|urlencode }})%20AND%20time_coverage_start%20<=%20'{{ enddt.strftime("%Y-%m-%dT%H:%M:%SZ") }}'%20AND%20time_coverage_end%20>=%20'{{ startdt.strftime("%Y-%m-%dT%H:%M:%SZ") }}'
     parameters:
       geom: 
         description: 'Geometry WKT'
         type: str
         default: 'POLYGON ((111.0000000000000000 -33.0000000000000000, 111.0000000000000000 -31.5000000000000000, 115.8000030517578125 -31.5000000000000000, 115.8000030517578125 -33.0000000000000000, 111.0000000000000000 -33.0000000000000000))'
+      startdt:
+        description: Forecast date
+        type: datetime
+        default: 2020-02-03
+      enddt:
+        description: Forecast date
+        type: datetime
+        default: 2021-02-10
     description: AODN wave altimetry dataframe
     driver: geojson 
     metadata:
       catalog_dir: ''
   nrt_wave_sar:
     args:
-      urlpath: http://geoserver-123.aodn.org.au/geoserver/ows?service=WFS&request=GetFeature&version=1.0.0&workspace=imos&typeName=srs_surface_waves_sar_fv00_trajectory_map&CQL_FILTER=INTERSECTS(geom,{{ geom|urlencode }})
+      urlpath: http://geoserver-123.aodn.org.au/geoserver/ows?service=WFS&request=GetFeature&version=1.0.0&workspace=imos&typeName=srs_surface_waves_sar_fv00_trajectory_map&CQL_FILTER=INTERSECTS(geom,{{ geom|urlencode }})%20AND%20time_coverage_start%20<=%20'{{ enddt.strftime("%Y-%m-%dT%H:%M:%SZ") }}'%20AND%20time_coverage_end%20>=%20'{{ startdt.strftime("%Y-%m-%dT%H:%M:%SZ") }}'
     parameters:
       geom: 
         description: 'Geometry WKT'
         type: str
         default: 'POLYGON ((111.0000000000000000 -33.0000000000000000, 111.0000000000000000 -31.5000000000000000, 115.8000030517578125 -31.5000000000000000, 115.8000030517578125 -33.0000000000000000, 111.0000000000000000 -33.0000000000000000))'
+      startdt:
+        description: Forecast date
+        type: datetime
+        default: 2020-02-03
+      enddt:
+        description: Forecast date
+        type: datetime
+        default: 2021-02-10    
     description: AODN wave SAR dataframe
     driver: geojson 
     metadata:
