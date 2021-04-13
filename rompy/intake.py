@@ -193,3 +193,112 @@ class NetCDFFCStackSource(DataSourceMixin):
         self._ds = ds
 
 
+
+
+class NetCDFAODNStackSource(DataSourceMixin):
+    """An extension of intake-xarray in an opinionated fashion to open a stack of AODN altimetry data stored as netcdf using xarray.
+
+    Expands urlpath with the product of values pased in startdt, enddt and geom to establish a finite set of urls to stack. Defers to XArray for file opening and backend driver selection.
+
+    Parameters
+    ----------
+    urlpath : str
+        Original path to scan for source file(s).
+        Some examples:
+            - ``"http://thredds.aodn.org.au/thredds/dodsC/"``
+        Note that the final path uses startdt, enddt and geom parameters.
+    geom: Geometry WKT
+        Geopgrahical coordinates polygon used to retrieve AODN data
+        Example:
+            -'POLYGON ((111.0000000000000000 -33.0000000000000000, 111.0000000000000000 -31.5000000000000000, 115.8000030517578125 -31.5000000000000000, 115.8000030517578125 -33.0000000000000000, 111.0000000000000000 -33.0000000000000000))'
+    ds_filters:
+        Dictionary of common dataset manipulations that are applied in order 
+        during dataset preprocessing. Configurable from catalog entry yaml. 
+        Filters currently available are ['sort','subset','crop','timenorm','rename']
+        Examples:
+            - {'rename':{'dir':'mean_dir'},
+               'sort':['direction'],
+               'timenorm':'hour',
+               'crop':{'lon':slice(-32.2,-33.2),
+                       'lat':slice(114.,115.)}
+               }
+        Additional documentation to follow - see source code for xarray 
+        implementation details.
+    startdt, enddt: datetime
+        Start and end dates used to retrieve AODN data and crop final stacked dataset to. 
+    chunks : int or dict, optional
+        Chunks is used to load the new dataset into dask
+        arrays. ``chunks={}`` loads the dataset with dask using a single
+        chunk for all arrays.
+    xarray_kwargs: dict
+        Additional xarray kwargs for xr.open_dataset().
+    storage_options: dict
+        If using a remote fs (whether caching locally or not), these are
+        the kwargs to pass to that FS.
+    """
+    name = 'netcdf_aodnstack'
+
+    def __init__(self, urlpath, geom=None, ds_filters=None,
+                 startdt = None, enddt = None,
+                 chunks=None, xarray_kwargs=None, metadata=None,
+                 storage_options=None, **kwargs):
+        
+        self.ds_filters = ds_filters or {}
+        self.geom = geom
+        self.startdt = to_datetime(startdt)
+        self.enddt = to_datetime(enddt)
+        self.chunks = chunks or {}
+        self.xarray_kwargs = xarray_kwargs or {}
+        self._ds = None
+        self.urlpath = urlpath
+        super(NetCDFAODNStackSource, self).__init__(metadata=metadata, **kwargs)
+
+    @property
+    def urlpath(self):
+        return self._urlpath
+
+    @urlpath.setter
+    def urlpath(self, urlpath):
+        if hasattr(self, '_original_urlpath'):
+            self._urlpath = urlpath
+            return
+
+        self._original_urlpath = urlpath
+
+        import urllib
+        import geopandas as gpd
+        params={}
+        params['REQUEST'] = 'GetFeature'
+        params['SERVICE'] = 'WFS'
+        params['VERSION'] = '1.0.0'
+        params['typeName'] = 'srs_surface_waves_altimetry_map'
+        params['CQL_FILTER'] = f"INTERSECTS(geom, {self.geom}) AND time_coverage_start <= '{self.enddt}' AND time_coverage_end >= '{self.startdt}'"
+        wfs_url = 'http://geoserver-portal.aodn.org.au/geoserver/ows'
+        df = gpd.read_file(f'{wfs_url}?{urllib.parse.urlencode(params)}')
+        df = df.file_url
+        self._urlpath = [urlpath+i for i in list(df)]
+    
+    def _open_dataset(self):
+        import xarray as xr
+        from dask import delayed, compute
+        import dask.config as dc
+        from .filters import _open_preprocess_time
+
+        if isinstance(self.urlpath,list):
+            if len(self.urlpath) == 0:
+                raise ValueError(f'No urls matched for query: {self}')
+            elif len(self.urlpath) == 1:
+                ds = _open_preprocess_time(self.urlpath[0],self.startdt,self.enddt,self.chunks,self.ds_filters,self.xarray_kwargs)
+                ds = ds.expand_dims('init')
+            elif len(self.urlpath) > 1:
+                __open_preprocess_time=delayed(_open_preprocess_time)
+                futures = [__open_preprocess_time(url,self.startdt,self.enddt,self.chunks,self.ds_filters,self.xarray_kwargs) for url in self.urlpath]
+                dsets = compute(*futures,traverse=False)
+                ds = xr.concat(dsets, dim='TIME', 
+                                      coords=['TIME'], 
+                                      compat="override", 
+                                      combine_attrs="override")
+        else:
+            raise ValueError('Internal error. Expected urlpath path pattern string to have been expanded to a list')
+            
+        self._ds = ds

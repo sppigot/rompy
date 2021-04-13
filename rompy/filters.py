@@ -23,9 +23,9 @@ def crop_filter(ds,bbox):
         ds = ds.sel(this_crop)
     return ds
 
-def timenorm_filter(ds,interval='hour',reftime=None):
+def timenorm_filter(ds,interval={'interval':'hour'},reftime=None):
     from pandas import to_timedelta, to_datetime
-    dt = to_timedelta('1 ' + interval)
+    dt = to_timedelta('1 ' + interval['interval'])
     if reftime is None:
         ds['init'] = ds['time'][0]
     else:
@@ -54,5 +54,20 @@ def _open_preprocess(url,chunks,filters,xarray_kwargs):
     for fn, params in filters.items():
         if isinstance(fn,str):
             fn = filter_fns[fn]
-        ds = fn(ds,**params)
+        ds = fn(ds,params)
+    return ds
+
+def _open_preprocess_time(url,startdt,enddt,chunks,filters,xarray_kwargs):
+    import xarray as xr
+    ds = xr.open_dataset(url,chunks=chunks,**xarray_kwargs)
+    # filter by time to empty memory
+    inds = ds.TIME >= startdt
+    inds = inds & (ds.TIME <= enddt)
+    ds = ds.where(inds,drop=True) 
+    #
+    filter_fns = get_filter_fns()
+    for fn, params in filters.items():
+        if isinstance(fn,str):
+            fn = filter_fns[fn]
+        ds = fn(ds,params)
     return ds
