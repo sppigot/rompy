@@ -205,12 +205,15 @@ class NetCDFAODNStackSource(DataSourceMixin):
     urlpath : str
         Original path to scan for source file(s).
         Some examples:
+            - ``http://geoserver-123.aodn.org.au/geoserver/ows?service=WFS&request=GetFeature&version=1.0.0&workspace=imos&typeName=srs_surface_waves_altimetry_map&CQL_FILTER=INTERSECTS(geom,{{ geom|urlencode }})%20AND%20time_coverage_start%20<=%20'{{ enddt.strftime("%Y-%m-%dT%H:%M:%SZ") }}'%20AND%20time_coverage_end%20>=%20'{{ startdt.strftime("%Y-%m-%dT%H:%M:%SZ") }}'``
+        Note that urlpath uses startdt, enddt and geom parameters.
+    thredds_prefix : str
+        Thredd prefix to be added to product of scanned urls.
+        Some examples:
             - ``"http://thredds.aodn.org.au/thredds/dodsC/"``
-        Note that the final path uses startdt, enddt and geom parameters.
-    geom: Geometry WKT
-        Geopgrahical coordinates polygon used to retrieve AODN data
-        Example:
-            -'POLYGON ((111.0000000000000000 -33.0000000000000000, 111.0000000000000000 -31.5000000000000000, 115.8000030517578125 -31.5000000000000000, 115.8000030517578125 -33.0000000000000000, 111.0000000000000000 -33.0000000000000000))'
+        Note that the final path uses startdt, enddt and geom parameters.    
+    startdt, enddt: datetime
+        Start and end dates used to retrieve AODN data and crop final stacked dataset to. 
     ds_filters:
         Dictionary of common dataset manipulations that are applied in order 
         during dataset preprocessing. Configurable from catalog entry yaml. 
@@ -224,8 +227,6 @@ class NetCDFAODNStackSource(DataSourceMixin):
                }
         Additional documentation to follow - see source code for xarray 
         implementation details.
-    startdt, enddt: datetime
-        Start and end dates used to retrieve AODN data and crop final stacked dataset to. 
     chunks : int or dict, optional
         Chunks is used to load the new dataset into dask
         arrays. ``chunks={}`` loads the dataset with dask using a single
@@ -238,15 +239,16 @@ class NetCDFAODNStackSource(DataSourceMixin):
     """
     name = 'netcdf_aodnstack'
 
-    def __init__(self, urlpath, geom=None, ds_filters=None,
-                 startdt = None, enddt = None,
+    def __init__(self, urlpath,thredds_prefix,
+                 startdt, enddt,
+                 ds_filters=None,
                  chunks=None, xarray_kwargs=None, metadata=None,
                  storage_options=None, **kwargs):
         
-        self.ds_filters = ds_filters or {}
-        self.geom = geom
+        self.thredds_prefix = thredds_prefix
         self.startdt = to_datetime(startdt)
-        self.enddt = to_datetime(enddt)
+        self.enddt = to_datetime(enddt)        
+        self.ds_filters = ds_filters or {}
         self.chunks = chunks or {}
         self.xarray_kwargs = xarray_kwargs or {}
         self._ds = None
@@ -265,18 +267,10 @@ class NetCDFAODNStackSource(DataSourceMixin):
 
         self._original_urlpath = urlpath
 
-        import urllib
         import geopandas as gpd
-        params={}
-        params['REQUEST'] = 'GetFeature'
-        params['SERVICE'] = 'WFS'
-        params['VERSION'] = '1.0.0'
-        params['typeName'] = 'srs_surface_waves_altimetry_map'
-        params['CQL_FILTER'] = f"INTERSECTS(geom, {self.geom}) AND time_coverage_start <= '{self.enddt}' AND time_coverage_end >= '{self.startdt}'"
-        wfs_url = 'http://geoserver-portal.aodn.org.au/geoserver/ows'
-        df = gpd.read_file(f'{wfs_url}?{urllib.parse.urlencode(params)}')
+        df = gpd.read_file(urlpath)
         df = df.file_url
-        self._urlpath = [urlpath+i for i in list(df)]
+        self._urlpath = [self.thredds_prefix+i for i in list(df)]
     
     def _open_dataset(self):
         import xarray as xr
