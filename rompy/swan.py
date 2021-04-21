@@ -368,7 +368,7 @@ class Swan_accessor(object):
 
                 if z2 is not None:
                     z2t = np.squeeze(ds[z2].isel(time=ti).values)
-                    np.savetxt(f,z1t,fmt=fmt)    
+                    np.savetxt(f,z2t,fmt=fmt)    
 
                 inptimes.append(time_str)
 
