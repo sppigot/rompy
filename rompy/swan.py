@@ -202,7 +202,7 @@ class SwanGrid(BaseGrid):
     @property
     def inpgrid(self):
         if self.gridtype == "REG":
-            inpstr = f'REG {self.x0} {self.y0} {self.rot} {self.nx:0.0f} {self.ny:0.0f} {self.dx} {self.dy}'
+            inpstr = f'REG {self.x0} {self.y0} {self.rot} {self.nx-1:0.0f} {self.ny-1:0.0f} {self.dx} {self.dy}'
             if self.exc is not None:
                 inpstr += f' EXC {self.exc}'
             return inpstr
