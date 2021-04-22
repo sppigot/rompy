@@ -17,9 +17,9 @@ def subset_filter(ds,data_vars):
         ds = ds[data_vars]
     return ds
 
-def crop_filter(ds,bbox):
-    if bbox is not None:
-        this_crop = {k:bbox[k] for k in bbox.keys() if k in ds.dims.keys()}
+def crop_filter(ds,data_slice):
+    if data_slice is not None:
+        this_crop = {k:data_slice[k] for k in data_slice.keys() if k in ds.dims.keys()}
         ds = ds.sel(this_crop)
     return ds
 
@@ -50,21 +50,6 @@ def get_filter_fns():
 def _open_preprocess(url,chunks,filters,xarray_kwargs):
     import xarray as xr
     ds = xr.open_dataset(url,chunks=chunks,**xarray_kwargs)
-    filter_fns = get_filter_fns()
-    for fn, params in filters.items():
-        if isinstance(fn,str):
-            fn = filter_fns[fn]
-        ds = fn(ds,params)
-    return ds
-
-def _open_preprocess_time(url,startdt,enddt,chunks,filters,xarray_kwargs):
-    import xarray as xr
-    ds = xr.open_dataset(url,chunks=chunks,**xarray_kwargs)
-    # filter by time to empty memory
-    inds = ds.TIME >= startdt
-    inds = inds & (ds.TIME <= enddt)
-    ds = ds.where(inds,drop=True) 
-    #
     filter_fns = get_filter_fns()
     for fn, params in filters.items():
         if isinstance(fn,str):

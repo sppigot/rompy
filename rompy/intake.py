@@ -276,17 +276,22 @@ class NetCDFAODNStackSource(DataSourceMixin):
         import xarray as xr
         from dask import delayed, compute
         import dask.config as dc
-        from .filters import _open_preprocess_time
+        from .filters import _open_preprocess
+
+        # Ensure a time filter is applied to each dataset
+        from .filters import crop_filter
+        if ('crop' not in self.ds_filters.keys()) and (crop_filter not in self.ds_filters.keys()):
+            self.ds_filters['crop']={'TIME':slice(f'{self.startdt}',f'{self.enddt}')}
 
         if isinstance(self.urlpath,list):
             if len(self.urlpath) == 0:
                 raise ValueError(f'No urls matched for query: {self}')
             elif len(self.urlpath) == 1:
-                ds = _open_preprocess_time(self.urlpath[0],self.startdt,self.enddt,self.chunks,self.ds_filters,self.xarray_kwargs)
+                ds = _open_preprocess(self.urlpath[0],self.chunks,self.ds_filters,self.xarray_kwargs)
                 ds = ds.expand_dims('init')
             elif len(self.urlpath) > 1:
-                __open_preprocess_time=delayed(_open_preprocess_time)
-                futures = [__open_preprocess_time(url,self.startdt,self.enddt,self.chunks,self.ds_filters,self.xarray_kwargs) for url in self.urlpath]
+                __open_preprocess=delayed(_open_preprocess)
+                futures = [__open_preprocess(url,self.chunks,self.ds_filters,self.xarray_kwargs) for url in self.urlpath]
                 dsets = compute(*futures,traverse=False)
                 ds = xr.concat(dsets, dim='TIME', 
                                       coords=['TIME'], 
