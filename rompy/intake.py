@@ -269,7 +269,9 @@ class NetCDFAODNStackSource(DataSourceMixin):
 
         import geopandas as gpd
         df = gpd.read_file(urlpath)
-        df = df.file_url
+        if 'file_url' in df: df = df.file_url
+        elif 'url' in df: df = df.url
+        else: raise KeyError(f'No url field for AODN request')
         self._urlpath = [self.thredds_prefix+i for i in list(df)]
     
     def _open_dataset(self):
