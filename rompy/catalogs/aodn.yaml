@@ -47,6 +47,7 @@ sources:
        thredds_prefix: "http://thredds.aodn.org.au/thredds/dodsC/"
        startdt: "{{startdt}}"
        enddt: "{{enddt}}"
+       geom: "{{geom}}"
     parameters:
       geom: 
         description: 'Geometry WKT'
@@ -90,6 +91,7 @@ sources:
        thredds_prefix: "http://thredds.aodn.org.au/thredds/dodsC/"
        startdt: "{{startdt}}"
        enddt: "{{enddt}}"
+       geom: "{{geom}}"
     parameters:
       geom: 
         description: 'Geometry WKT'
