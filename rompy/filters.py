@@ -17,15 +17,15 @@ def subset_filter(ds,data_vars):
         ds = ds[data_vars]
     return ds
 
-def crop_filter(ds,bbox):
-    if bbox is not None:
-        this_crop = {k:bbox[k] for k in bbox.keys() if k in ds.dims.keys()}
+def crop_filter(ds,data_slice):
+    if data_slice is not None:
+        this_crop = {k:data_slice[k] for k in data_slice.keys() if k in ds.dims.keys()}
         ds = ds.sel(this_crop)
     return ds
 
-def timenorm_filter(ds,interval='hour',reftime=None):
+def timenorm_filter(ds,interval={'interval':'hour'},reftime=None):
     from pandas import to_timedelta, to_datetime
-    dt = to_timedelta('1 ' + interval)
+    dt = to_timedelta('1 ' + interval['interval'])
     if reftime is None:
         ds['init'] = ds['time'][0]
     else:
@@ -54,5 +54,5 @@ def _open_preprocess(url,chunks,filters,xarray_kwargs):
     for fn, params in filters.items():
         if isinstance(fn,str):
             fn = filter_fns[fn]
-        ds = fn(ds,**params)
+        ds = fn(ds,params)
     return ds
