@@ -213,7 +213,11 @@ class NetCDFAODNStackSource(DataSourceMixin):
             - ``"http://thredds.aodn.org.au/thredds/dodsC/"``
         Note that the final path uses startdt, enddt and geom parameters.    
     startdt, enddt: datetime
-        Start and end dates used to retrieve AODN data and crop final stacked dataset to. 
+        Start and end dates used to retrieve AODN data and crop final stacked dataset to.
+    geom: str
+        Polygon with geographical coordinates (minLon,minLat,minLon,maxLat,maxLon,maxLat,maxLon,minLat,minLon,minLat).
+        Some examples:
+            - 'POLYGON ((111.0000000000000000 -33.0000000000000000, 111.0000000000000000 -31.5000000000000000, 115.8000030517578125 -31.5000000000000000, 115.8000030517578125 -33.0000000000000000, 111.0000000000000000 -33.0000000000000000))'
     ds_filters:
         Dictionary of common dataset manipulations that are applied in order 
         during dataset preprocessing. Configurable from catalog entry yaml. 
@@ -240,14 +244,15 @@ class NetCDFAODNStackSource(DataSourceMixin):
     name = 'netcdf_aodnstack'
 
     def __init__(self, urlpath,thredds_prefix,
-                 startdt, enddt,
+                 startdt, enddt, geom,
                  ds_filters=None,
                  chunks=None, xarray_kwargs=None, metadata=None,
                  storage_options=None, **kwargs):
         
         self.thredds_prefix = thredds_prefix
         self.startdt = to_datetime(startdt)
-        self.enddt = to_datetime(enddt)        
+        self.enddt = to_datetime(enddt)
+        self.geom = geom
         self.ds_filters = ds_filters or {}
         self.chunks = chunks or {}
         self.xarray_kwargs = xarray_kwargs or {}
@@ -280,10 +285,15 @@ class NetCDFAODNStackSource(DataSourceMixin):
         import dask.config as dc
         from .filters import _open_preprocess
 
-        # Ensure a time filter is applied to each dataset
+        # Ensure a time and spatial filter is applied to each dataset
         from .filters import crop_filter
         if ('crop' not in self.ds_filters.keys()) and (crop_filter not in self.ds_filters.keys()):
-            self.ds_filters['crop']={'TIME':slice(f'{self.startdt}',f'{self.enddt}')}
+            import shapely.wkt
+            lon, lat = shapely.wkt.loads(self.geom).exterior.coords.xy
+            self.ds_filters['crop']={'TIME':slice(f'{self.startdt}',f'{self.enddt}'),
+                                     'LATITUDE':(f'{min(lat)}',f'{max(lat)}'),
+                                     'LONGITUDE':(f'{min(lon)}',f'{max(lon)}')}
+
 
         if isinstance(self.urlpath,list):
             if len(self.urlpath) == 0:
@@ -299,6 +309,7 @@ class NetCDFAODNStackSource(DataSourceMixin):
                                       coords=['TIME'], 
                                       compat="override", 
                                       combine_attrs="override")
+                if 'sort' in self.ds_filters.keys(): ds=ds.sortby(self.ds_filters['sort'])
         else:
             raise ValueError('Internal error. Expected urlpath path pattern string to have been expanded to a list')
             
