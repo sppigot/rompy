@@ -21,6 +21,10 @@ def crop_filter(ds,data_slice):
     if data_slice is not None:
         this_crop = {k:data_slice[k] for k in data_slice.keys() if k in ds.dims.keys()}
         ds = ds.sel(this_crop)
+        for k in data_slice.keys():
+            if (k not in ds.dims.keys()) and (k in ds.coords.keys()):
+                ds=ds.where(ds[k]>float(data_slice[k][0]),drop=True)
+                ds=ds.where(ds[k]<float(data_slice[k][1]),drop=True)
     return ds
 
 def timenorm_filter(ds,interval={'interval':'hour'},reftime=None):
