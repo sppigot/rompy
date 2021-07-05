@@ -151,7 +151,7 @@ class NetCDFFCStackSource(DataSourceMixin):
                 futures = [__open_preprocess(url,self.chunks,self.ds_filters,self.xarray_kwargs) for url in self.urlpath]
                 dsets = compute(*futures,traverse=False)
                 if len(dsets[0].lead) == 1: # Assumes this indicates that each timestep of forecase is separate file
-                    inits = [to_datetime(ds.init.values[0]) for ds in dsets]
+                    inits = sorted([to_datetime(ds.init.values[0]) for ds in dsets])
                     dsets_concat = []
                     for i in set(inits):
                         subset = [ds for ds in dsets if ds.init.values[0] == i]
