@@ -118,6 +118,50 @@ def test_intake_remote_hindcast():
                                                 'output':['msh']}).to_dask()
     assert ds.time.shape == (193,)
 
+def test_intake_aodn_wave_buoys_remote():
+    import rompy
+    df=rompy.cat.aodn.nrt_wave_buoys(startdt='2021-04-05',
+                                     enddt='2021-04-29',
+                                     geom='POLYGON ((111.0000000000000000 -33.0000000000000000, 111.0000000000000000 -31.5000000000000000, 115.8000030517578125 -31.5000000000000000, 115.8000030517578125 -33.0000000000000000, 111.0000000000000000 -33.0000000000000000))'
+                                     ).read()
+
+    assert len(df) == 94
+
+def test_intake_aodn_altimetry_points_remote():
+    import rompy
+    df=rompy.cat.aodn.nrt_wave_altimetry_points(startdt='2020-02-03',
+                                                enddt='2020-02-04',
+                                                geom='POLYGON ((111.0000000000000000 -33.0000000000000000, 111.0000000000000000 -31.5000000000000000, 115.8000030517578125 -31.5000000000000000, 115.8000030517578125 -33.0000000000000000, 111.0000000000000000 -33.0000000000000000))'
+                                                ).read()
+
+    assert len(df) == 34
+
+def test_intake_aodn_altimetry_remote_stack():
+    import rompy
+    ds=rompy.cat.aodn.nrt_wave_altimetry(startdt='2020-02-03',
+                                         enddt='2020-02-04',
+                                         geom='POLYGON ((111.0000000000000000 -33.0000000000000000, 111.0000000000000000 -31.5000000000000000, 115.8000030517578125 -31.5000000000000000, 115.8000030517578125 -33.0000000000000000, 111.0000000000000000 -33.0000000000000000))',
+                                         ds_filters={'subset':['SWH_C']}).to_dask()
+
+    assert ds.TIME.shape == (49,)
+
+def test_intake_aodn_sar_points_remote():
+    import rompy
+    df=rompy.cat.aodn.nrt_wave_sar_points(startdt='2021-02-01',
+                                          enddt='2021-04-29',
+                                          geom='POLYGON ((111.0000000000000000 -33.0000000000000000, 111.0000000000000000 -31.5000000000000000, 115.8000030517578125 -31.5000000000000000, 115.8000030517578125 -33.0000000000000000, 111.0000000000000000 -33.0000000000000000))'
+                                         ).read()
+
+    assert len(df) == 28
+
+def test_intake_aodn_sar_remote_stack():
+    import rompy
+    ds=rompy.cat.aodn.nrt_wave_sar(startdt='2021-03-01',
+                                         enddt='2021-04-29',
+                                         geom='POLYGON ((111.0000000000000000 -33.0000000000000000, 111.0000000000000000 -31.5000000000000000, 115.8000030517578125 -31.5000000000000000, 115.8000030517578125 -33.0000000000000000, 111.0000000000000000 -33.0000000000000000))',
+                                         ds_filters={'subset':['HS_PART']}).to_dask()
+
+    assert ds.TIME.shape == (10,)
 
 if __name__ == '__main__':
     # test_intake_remote_stack()
@@ -125,3 +169,4 @@ if __name__ == '__main__':
     # test_intake_local()
     test_intake_local_hindcast_time()
     # test_intake_local_stack_single_time()
+
