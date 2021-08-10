@@ -141,7 +141,7 @@ def test_intake_aodn_altimetry_remote_stack():
     ds=rompy.cat.aodn.nrt_wave_altimetry(startdt='2020-02-03',
                                          enddt='2020-02-04',
                                          geom='POLYGON ((111.0000000000000000 -33.0000000000000000, 111.0000000000000000 -31.5000000000000000, 115.8000030517578125 -31.5000000000000000, 115.8000030517578125 -33.0000000000000000, 111.0000000000000000 -33.0000000000000000))',
-                                         ds_filters={'subset':['SWH_C']}).to_dask()
+                                         ds_filters={'subset':{'data_vars':['SWH_C']}}).to_dask()
 
     assert ds.TIME.shape == (49,)
 
@@ -159,7 +159,7 @@ def test_intake_aodn_sar_remote_stack():
     ds=rompy.cat.aodn.nrt_wave_sar(startdt='2021-03-01',
                                          enddt='2021-04-29',
                                          geom='POLYGON ((111.0000000000000000 -33.0000000000000000, 111.0000000000000000 -31.5000000000000000, 115.8000030517578125 -31.5000000000000000, 115.8000030517578125 -33.0000000000000000, 111.0000000000000000 -33.0000000000000000))',
-                                         ds_filters={'subset':['HS_PART']}).to_dask()
+                                         ds_filters={'subset':{'data_vars':['HS_PART']}}).to_dask()
 
     assert ds.TIME.shape == (10,)
 
