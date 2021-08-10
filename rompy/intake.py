@@ -309,7 +309,7 @@ class NetCDFAODNStackSource(DataSourceMixin):
                                       coords=['TIME'], 
                                       compat="override", 
                                       combine_attrs="override")
-                if 'sort' in self.ds_filters.keys(): ds=ds.sortby(self.ds_filters['sort'])
+                if 'sort' in self.ds_filters.keys(): ds=ds.sortby(self.ds_filters['sort']['coords'])
         else:
             raise ValueError('Internal error. Expected urlpath path pattern string to have been expanded to a list')
             

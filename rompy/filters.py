@@ -6,18 +6,18 @@
 # The full license is in the LICENSE file, distributed with this software.
 #-----------------------------------------------------------------------------
 
-def sort_filter(ds,coords):
+def sort_filter(ds,coords=None):
     for c in coords:
         if c in ds:
             ds = ds.sortby(c)
     return ds
 
-def subset_filter(ds,data_vars):
+def subset_filter(ds,data_vars=None):
     if data_vars is not None:
         ds = ds[data_vars]
     return ds
 
-def crop_filter(ds,data_slice):
+def crop_filter(ds,**data_slice):
     if data_slice is not None:
         this_crop = {k:data_slice[k] for k in data_slice.keys() if k in ds.dims.keys()}
         ds = ds.sel(this_crop)
@@ -27,9 +27,9 @@ def crop_filter(ds,data_slice):
                 ds=ds.where(ds[k]<float(data_slice[k][1]),drop=True)
     return ds
 
-def timenorm_filter(ds,interval={'interval':'hour'},reftime=None):
+def timenorm_filter(ds,interval='hour',reftime=None):
     from pandas import to_timedelta, to_datetime
-    dt = to_timedelta('1 ' + interval['interval'])
+    dt = to_timedelta('1 ' + interval)
     if reftime is None:
         ds['init'] = ds['time'][0]
     else:
@@ -40,7 +40,7 @@ def timenorm_filter(ds,interval={'interval':'hour'},reftime=None):
     ds = ds.swap_dims({'time':'lead'})
     return ds
 
-def rename_filter(ds,varmap):
+def rename_filter(ds,**varmap):
     ds = ds.rename(varmap)
     return ds
 
@@ -58,5 +58,5 @@ def _open_preprocess(url,chunks,filters,xarray_kwargs):
     for fn, params in filters.items():
         if isinstance(fn,str):
             fn = filter_fns[fn]
-        ds = fn(ds,params)
+        ds = fn(ds,**params)
     return ds
