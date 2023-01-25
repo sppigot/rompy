@@ -8,7 +8,7 @@ def test_instantiate(tmpdir):
     model = Model(
         id="parent",
         kind="swan",
-        workdir="./test-workdir",
+        workdir=tmpdir / "parent",
         children=[child0, child1],
     )
     print(model)
