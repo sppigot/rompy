@@ -12,13 +12,16 @@ import numpy as np
 import xarray as xr
 
 from .core import BaseGrid, BaseModel
+from .templates.swan import model
 
 logger = logging.getLogger(__name__)
 
 
 class SwanModel(BaseModel):
+    model: str = "SWAN"
+    template: str = "../rompy/templates/swan"
+
     def __init__(self, **data):
-        data.update(dict(model="SWAN"))
         super().__init__(**data)
 
     def _get_grid(self, key=None):
