@@ -20,7 +20,8 @@ import cookiecutter.config as cc_config
 import cookiecutter.generate as cc_generate
 import cookiecutter.repository as cc_repository
 import numpy as np
-from pydantic import BaseModel
+from pydantic import BaseModel as pyBaseModel
+from pydantic_numpy import NDArray
 
 # pydantic interface to BaseNumericalModel
 # https://pydantic-docs.helpmanual.io/usage/models/
@@ -29,7 +30,7 @@ from pydantic import BaseModel
 logger = logging.getLogger(__name__)
 
 
-class BaseModel(BaseModel):
+class BaseModel(pyBaseModel):
     run_id: str = "run_0001"
     output_dir: str = "simulations"
     settings: dict = {}
@@ -157,32 +158,20 @@ class BaseModel(BaseModel):
         return zip_fn
 
 
-class BaseGrid(SimpleNamespace):
+# write pydantic BaseGrid class
+
+
+class BaseGrid(pyBaseModel):
     """An object which provides an abstract representation of a grid in some geographic space
 
-    This is the base class for all Grid objects. The minimum representation of a grid are two NumPy array's representing the vertices or nodes of some structured or unstructured grid, its bounding box and a boundary polygon. No knowledge of the grid connectivity is expected.
+    This is the base class for all Grid objects. The minimum representation of a grid are two
+    NumPy array's representing the vertices or nodes of some structured or unstructured grid,
+    its bounding box and a boundary polygon. No knowledge of the grid connectivity is expected.
 
     """
 
-    def __init__(self):
-        self.__x = None
-        self.__y = None
-
-    @property
-    def x(self):
-        return self.__x
-
-    @x.setter
-    def x(self, x):
-        self.__x = x
-
-    @property
-    def y(self):
-        return self.__y
-
-    @y.setter
-    def y(self, y):
-        self.__y = y
+    x: NDArray
+    y: NDArray
 
     @property
     def minx(self):
@@ -216,7 +205,7 @@ class BaseGrid(SimpleNamespace):
         return bbox
 
     def _get_boundary(self, tolerance=0.2):
-        from shapely.geometry import MultiPoint
+        from shapely.geometry import MultiPoint, Polygon
 
         xys = list(zip(self.x.flatten(), self.y.flatten()))
         polygon = MultiPoint(xys).convex_hull
@@ -263,7 +252,7 @@ class BaseGrid(SimpleNamespace):
         import matplotlib.pyplot as plt
         from cartopy.mpl.gridliner import (LATITUDE_FORMATTER,
                                            LONGITUDE_FORMATTER)
-        from shapely.geometry import MultiPoint
+        from shapely.geometry import MultiPoint, Polygon
 
         # First set some plot parameters:
         bbox = self.bbox(buffer=0.1)
@@ -306,4 +295,12 @@ class BaseGrid(SimpleNamespace):
 
 
 if __name__ == "__main__":
-    model = BaseModel()
+    import matplotlib.pyplot as plt
+
+    # model = BaseModel()
+    x = np.array([0, 1, 2, 3])
+    y = np.array([0, 1, 2, 3])
+    xx, yy = np.meshgrid(x, y)
+    grid = BaseGrid(x=xx, y=yy)
+    grid.plot()
+    plt.show()
