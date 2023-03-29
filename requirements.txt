@@ -1,11 +1,11 @@
-# cookiecutter
+cookiecutter
 dask
 fsspec
 geopandas
-# h5py
+h5py
 intake
 intake-xarray
-# intake-geopandas
+intake-geopandas
 matplotlib
 netcdf4
 numpy
@@ -15,3 +15,4 @@ pydantic
 scipy
 tqdm
 xarray
+pydantic
