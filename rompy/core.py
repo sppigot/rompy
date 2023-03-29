@@ -14,7 +14,6 @@ import os
 import platform
 import pprint
 import zipfile as zf
-from types import SimpleNamespace
 
 import cookiecutter.config as cc_config
 import cookiecutter.generate as cc_generate
@@ -205,7 +204,7 @@ class BaseGrid(pyBaseModel):
         return bbox
 
     def _get_boundary(self, tolerance=0.2):
-        from shapely.geometry import MultiPoint, Polygon
+        from shapely.geometry import MultiPoint
 
         xys = list(zip(self.x.flatten(), self.y.flatten()))
         polygon = MultiPoint(xys).convex_hull
@@ -248,11 +247,9 @@ class BaseGrid(pyBaseModel):
     def plot(self, fscale=10):
         import cartopy.crs as ccrs
         import cartopy.feature as cfeature
-        import cartopy.mpl.ticker as cticker
         import matplotlib.pyplot as plt
         from cartopy.mpl.gridliner import (LATITUDE_FORMATTER,
                                            LONGITUDE_FORMATTER)
-        from shapely.geometry import MultiPoint, Polygon
 
         # First set some plot parameters:
         bbox = self.bbox(buffer=0.1)
