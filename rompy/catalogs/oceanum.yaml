@@ -23,7 +23,6 @@ sources:
     metadata:
       catalog_dir: ''
 
-
   oceanum_wave_glob05_era5_v1_spec:
     description: Oceanum WAVEWATCHIII Global wave hindcast at 0.5-degree forced with ERA5, wave spectra
     metadata:
@@ -99,25 +98,7 @@ sources:
         - hindcast
         - ecmwf
         - global
-      derived_variables:
-        - name: wndsp
-          input_variables: [u10, v10]
-          function: intake_oceanum.functions.speed
-        - name: u10_adj
-          input_variables: [u10, wndsp]
-          code: |
-            def adjust(u, spd, wmax=10, wfac=1.08):
-              ubump = u * wfac
-              return ubump.where(u>wmax, u)
-          function: adjust
-        - name: v10_adj
-          input_variables: [v10, wndsp]
-          code: |
-            def adjust(v, spd, wmax=10, wfac=1.08):
-              vbump = v * wfac
-              return vbump.where(v>wmax, v)
-          function: adjust
-    driver: intake_oceanum.source.ZarrSource
+    driver: intake_xarray.xzarr.ZarrSource
     args:
       urlpath: gs://oceanum-era5/grid/wind_10m.zarr
       storage_options:
