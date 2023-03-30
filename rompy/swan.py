@@ -12,17 +12,14 @@ import numpy as np
 import xarray as xr
 
 from .core import BaseGrid, BaseModel
-from .templates.swan import model
+from .templates.swan.model import Template
 
 logger = logging.getLogger(__name__)
 
 
 class SwanModel(BaseModel):
     model: str = "SWAN"
-    template: str = "../rompy/templates/swan"
-
-    def __init__(self, **data):
-        super().__init__(**data)
+    template: Template = Template()
 
     def _get_grid(self, key=None):
         from intake.source.utils import reverse_format

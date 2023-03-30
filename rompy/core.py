@@ -8,6 +8,7 @@
 
 import datetime
 import glob
+import inspect
 import json
 import logging
 import os
@@ -22,19 +23,23 @@ import numpy as np
 from pydantic import BaseModel as pyBaseModel
 from pydantic_numpy import NDArray
 
+from rompy.templates.base.model import Template
+
 # pydantic interface to BaseNumericalModel
 # https://pydantic-docs.helpmanual.io/usage/models/
 
+# comment using numpy style docstrings
 
 logger = logging.getLogger(__name__)
 
 
 class BaseModel(pyBaseModel):
-    run_id: str = "run_0001"
+    """A base class for all models"""
+
+    run_id: str = "test_base"
     output_dir: str = "simulations"
-    settings: dict = {}
+    template: Template
     model: str | None = None
-    template: str | None = None
     checkout: str | None = None
     # These are temporary until the cookiecutter stuff is sorted out
     _default_context: dict = {}
@@ -43,9 +48,20 @@ class BaseModel(pyBaseModel):
     class Config:
         underscore_attrs_are_private = True
 
-    def __init__(self, **data):
-        super().__init__(**data)
+    def _write_template_json(self):
+        """Write the cookiecutter.json file from pydantic template"""
+        template = os.path.dirname(inspect.getmodule(self.template).__file__)
+        ccjson = os.path.join(template, "cookiecutter.json")
+        with open(ccjson, "w") as f:
+            d = self.template.dict()
+            d.update({"_template": template})
+            d.update({"_generated_at": self.template._generated_at})
+            d.update({"_generated_by": self.template._generated_by})
+            d.update({"_generated_on": self.template._generated_on})
+            f.write(json.dumps(d))
+        return template
 
+    def _load_context(self):
         # The following code is mostly lifted from https://github.com/cookiecutter/cookiecutter/blob/master/cookiecutter/main.py
         # Load cookie-cutter config - see https://cookiecutter.readthedocs.io/en/1.7.0/advanced/user_config.html
 
@@ -54,8 +70,10 @@ class BaseModel(pyBaseModel):
             default_config=False,
         )
 
+        template = self._write_template_json()
+
         repo_dir, cleanup = cc_repository.determine_repo_dir(
-            template=self.template,
+            template=template,
             abbreviations=config_dict["abbreviations"],
             clone_to_dir=config_dict["cookiecutters_dir"],
             checkout=self.checkout,
@@ -100,7 +118,7 @@ class BaseModel(pyBaseModel):
 
     def save_settings(self):
         with open(self.staging_dir + "/settings.json", "w") as f:
-            json.dump(self.settings, f)
+            f.write(self.template.json())
 
     @classmethod
     def load_settings(fn):
@@ -108,19 +126,33 @@ class BaseModel(pyBaseModel):
             defaults = json.load(f)
 
     def generate(self):
-        self.settings["run_id"] = self.run_id
-        self.settings["_generated_at"] = str(datetime.datetime.utcnow())
-        self.settings["_generated_by"] = os.environ.get("USER")
-        self.settings["_generated_on"] = platform.node()
+        self.template.run_id = self.run_id
+        self.template._generated_at = str(datetime.datetime.utcnow())
+        self.template._generated_by = os.environ.get("USER")
+        self.template._generated_on = platform.node()
+
+        config_dict = cc_config.get_user_config(
+            config_file=None,
+            default_config=False,
+        )
+
+        template = self._write_template_json()
+
+        repo_dir, cleanup = cc_repository.determine_repo_dir(
+            template=template,
+            abbreviations=config_dict["abbreviations"],
+            clone_to_dir=config_dict["cookiecutters_dir"],
+            checkout=self.checkout,
+            no_input=True,
+        )
 
         # regenerate the context so that is is correctly templated
         context = cc_generate.generate_context(
-            context_file=os.path.join(self._repo_dir, "cookiecutter.json"),
-            extra_context=self.settings,
+            context_file=os.path.join(repo_dir, "cookiecutter.json"),
         )
 
         staging_dir = cc_generate.generate_files(
-            repo_dir=self._repo_dir,
+            repo_dir=repo_dir,
             context=context,
             overwrite_if_exists=True,
             output_dir=self.output_dir,
