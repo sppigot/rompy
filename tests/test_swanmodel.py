@@ -28,6 +28,15 @@ def test_swan_input():
     model = SwanModel(
         run_id="test_swan",
         output_dir="simulations",
-        template=dict(friction="MAD2"),
+        template=dict(friction="MAD"),
     )
-    assert model.template.friction == "MAD2"
+    assert model.template.friction == "MAD"
+
+
+def test_failing_friction():
+    with pytest.raises(ValueError):
+        model = SwanModel(
+            run_id="test_swan",
+            output_dir="simulations",
+            template=dict(friction="BAD"),
+        )
