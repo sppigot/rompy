@@ -6,7 +6,6 @@
 # The full license is in the LICENSE file, distributed with this software.
 # -----------------------------------------------------------------------------
 
-import datetime
 import glob
 import inspect
 import json
@@ -15,6 +14,7 @@ import os
 import platform
 import pprint
 import zipfile as zf
+from datetime import datetime
 
 import cookiecutter.config as cc_config
 import cookiecutter.generate as cc_generate
@@ -24,6 +24,8 @@ from pydantic import BaseModel as pyBaseModel
 from pydantic_numpy import NDArray
 
 from rompy.templates.base.model import Template
+
+from .utils import json_serial
 
 # pydantic interface to BaseNumericalModel
 # https://pydantic-docs.helpmanual.io/usage/models/
@@ -58,7 +60,7 @@ class BaseModel(pyBaseModel):
             d.update({"_generated_at": self.template._generated_at})
             d.update({"_generated_by": self.template._generated_by})
             d.update({"_generated_on": self.template._generated_on})
-            f.write(json.dumps(d))
+            f.write(json.dumps(d, default=json_serial, indent=4))
         return template
 
     def _load_context(self):
@@ -127,7 +129,7 @@ class BaseModel(pyBaseModel):
 
     def generate(self):
         self.template.run_id = self.run_id
-        self.template._generated_at = str(datetime.datetime.utcnow())
+        self.template._generated_at = str(datetime.utcnow())
         self.template._generated_by = os.environ.get("USER")
         self.template._generated_on = platform.node()
 
