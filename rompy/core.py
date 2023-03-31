@@ -50,8 +50,13 @@ class BaseModel(pyBaseModel):
     class Config:
         underscore_attrs_are_private = True
 
-    def _write_template_json(self):
-        """Write the cookiecutter.json file from pydantic template"""
+    def _write_template_json(self) -> str:
+        """Write the cookiecutter.json file from pydantic template
+
+        returns
+        -------
+        template : str
+        """
         template = os.path.dirname(inspect.getmodule(self.template).__file__)
         ccjson = os.path.join(template, "cookiecutter.json")
         with open(ccjson, "w") as f:
@@ -63,109 +68,74 @@ class BaseModel(pyBaseModel):
             f.write(json.dumps(d, default=json_serial, indent=4))
         return template
 
-    def _load_context(self):
-        # The following code is mostly lifted from https://github.com/cookiecutter/cookiecutter/blob/master/cookiecutter/main.py
-        # Load cookie-cutter config - see https://cookiecutter.readthedocs.io/en/1.7.0/advanced/user_config.html
-
-        config_dict = cc_config.get_user_config(
-            config_file=None,
-            default_config=False,
-        )
-
-        template = self._write_template_json()
-
-        repo_dir, cleanup = cc_repository.determine_repo_dir(
-            template=template,
-            abbreviations=config_dict["abbreviations"],
-            clone_to_dir=config_dict["cookiecutters_dir"],
-            checkout=self.checkout,
-            no_input=True,
-        )
-
-        context_file = os.path.join(repo_dir, "cookiecutter.json")
-        logger.debug("context_file is {}".format(context_file))
-
-        context = cc_generate.generate_context(
-            context_file=context_file,
-            default_context=config_dict["default_context"],
-            extra_context=self.settings,
-        )
-
-        print("Default context: (from cookiecutter.json)")
-        pprint.pprint(context["cookiecutter"])
-
-        self._repo_dir = repo_dir
-        self._default_context = context["cookiecutter"]
-        #
-        if self.settings is None:
-            self.settings = {}
-        self.settings["_template"] = self.template
-        self.settings["_checkout"] = self.checkout
-        self.settings["model"] = self.model
-
-        if not os.path.isdir(self.staging_dir):
-            os.makedirs(self.staging_dir + "/downloads")
-
     @property
     def staging_dir(self):
+        """The directory where the model is staged for execution
+
+        returns
+        -------
+        staging_dir : str
+        """
+
         return os.path.join(self.output_dir, self.run_id)
 
     @property
-    def grid(self):
+    def grid(self) -> "core.Grid":
+        """The grid used by the model
+
+        returns
+        -------
+        grid : core.Grid
+        """
         return self._get_grid()
 
     def _get_grid(self):
         """Subclasses should return an instance of core.Grid"""
         raise NotImplementedError
 
-    def save_settings(self):
-        with open(self.staging_dir + "/settings.json", "w") as f:
+    def save_settings(self) -> str:
+        """Save the run settings
+
+        returns
+        -------
+        settingsfile : str
+        """
+        settingsfile = os.path.join(self.staging_dir, "settings.json")
+        with open(settingsfile, "w") as f:
             f.write(self.template.json())
+        return settingsfile
 
     @classmethod
     def load_settings(fn):
+        """Load the run settings from a file"""
         with open(fn) as f:
             defaults = json.load(f)
 
-    def generate(self):
-        self.template.run_id = self.run_id
-        self.template._generated_at = str(datetime.utcnow())
-        self.template._generated_by = os.environ.get("USER")
-        self.template._generated_on = platform.node()
+    def generate(self) -> str:
+        """Generate the model input files
 
-        config_dict = cc_config.get_user_config(
-            config_file=None,
-            default_config=False,
-        )
-
-        template = self._write_template_json()
-
-        repo_dir, cleanup = cc_repository.determine_repo_dir(
-            template=template,
-            abbreviations=config_dict["abbreviations"],
-            clone_to_dir=config_dict["cookiecutters_dir"],
-            checkout=self.checkout,
-            no_input=True,
-        )
-
-        # regenerate the context so that is is correctly templated
-        context = cc_generate.generate_context(
-            context_file=os.path.join(repo_dir, "cookiecutter.json"),
-        )
-
-        staging_dir = cc_generate.generate_files(
-            repo_dir=repo_dir,
-            context=context,
-            overwrite_if_exists=True,
-            output_dir=self.output_dir,
-        )
-
+        returns
+        -------
+        staging_dir : str
+        """
+        staging_dir = self.template.generate(self.output_dir)
         # Save the run settings
         self.save_settings()
 
         return staging_dir
 
-    def zip(self):
+    def zip(self) -> str:
+        """Zip the input files for the model run
+
+        This function zips the input files for the model run and returns the
+        name of the zip file. It also cleans up the staging directory leaving
+        only the settings.json file that can be used to repoducte the run.
+
+        returns
+        -------
+        zip_fn : str
+        """
+
         # Always remove previous zips
         zip_fn = self.staging_dir + "/simulation.zip"
         if os.path.exists(zip_fn):
@@ -189,9 +159,6 @@ class BaseModel(pyBaseModel):
                 os.rmdir(f)
 
         return zip_fn
-
-
-# write pydantic BaseGrid class
 
 
 class BaseGrid(pyBaseModel):
