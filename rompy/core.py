@@ -16,9 +16,11 @@ import zipfile as zf
 import numpy as np
 from pydantic import BaseModel as pyBaseModel
 from pydantic_numpy import NDArray
+from shapely.geometry import Polygon
 
 from rompy.templates.base.model import Template
 
+from .types import Bbox
 from .utils import json_serial
 
 # pydantic interface to BaseNumericalModel
@@ -168,22 +170,22 @@ class BaseGrid(pyBaseModel):
     y: NDArray
 
     @property
-    def minx(self):
+    def minx(self) -> float:
         return np.nanmin(self.x)
 
     @property
-    def maxx(self):
+    def maxx(self) -> float:
         return np.nanmax(self.x)
 
     @property
-    def miny(self):
+    def miny(self) -> float:
         return np.nanmin(self.y)
 
     @property
-    def maxy(self):
+    def maxy(self) -> float:
         return np.nanmax(self.y)
 
-    def bbox(self, buffer=0.0):
+    def bbox(self, buffer=0.0) -> Bbox:
         """Returns a bounding box for the spatial grid
 
         This function returns a list [ll_x, ll_y, ur_x, ur_y]
@@ -198,7 +200,7 @@ class BaseGrid(pyBaseModel):
         bbox = [ll_x, ll_y, ur_x, ur_y]
         return bbox
 
-    def _get_boundary(self, tolerance=0.2):
+    def _get_boundary(self, tolerance=0.2) -> Polygon:
         from shapely.geometry import MultiPoint
 
         xys = list(zip(self.x.flatten(), self.y.flatten()))
