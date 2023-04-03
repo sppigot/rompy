@@ -1,3 +1,5 @@
+from datetime import datetime as pydatetime
+
 import pydantic
 
 
@@ -50,6 +52,15 @@ class Longitude(pydantic.BaseModel):
 
 
 class Coordinate(pydantic.BaseModel):
+    """Coordinate
+
+    Parameters
+    ----------
+    lon: Longitude
+    lat: Latitude
+
+    """ ""
+
     lon: Longitude
     lat: Latitude
 
@@ -67,7 +78,15 @@ class Coordinate(pydantic.BaseModel):
 
 
 class Bbox(pydantic.BaseModel):
-    """Bounding box"""
+    """Bounding box
+
+    Parameters
+    ----------
+    minlon: Longitude
+    minlat: Latitude
+    maxlon: Longitude
+    maxlat: Latitude
+    """
 
     minlon: Longitude
     minlat: Latitude
