@@ -16,3 +16,5 @@ scipy
 tqdm
 xarray
 pydantic
+pathlib
+cloudpathlib
