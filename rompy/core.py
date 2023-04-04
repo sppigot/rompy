@@ -37,11 +37,7 @@ class BaseModel(pyBaseModel):
     run_id: str = "test_base"
     output_dir: str = "simulations"
     template: Template
-    model: str | None = None
-    checkout: str | None = None
-    # These are temporary until the cookiecutter stuff is sorted out
-    _default_context: dict = {}
-    _repo_dir: dict = {}
+    _model: str | None = None
 
     class Config:
         underscore_attrs_are_private = True
