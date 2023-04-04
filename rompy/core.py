@@ -208,6 +208,15 @@ class BaseModel(pyBaseModel):
 
         return zip_fn
 
+    def __str__(self):
+        return self.json()
+
+    def __repr__(self):
+        return self.json()
+
+    def __call__(self):
+        return self.generate()
+
 
 class BaseGrid(pyBaseModel):
     """An object which provides an abstract representation of a grid in some geographic space

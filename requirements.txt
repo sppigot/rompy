@@ -19,3 +19,4 @@ pydantic
 pydantic_numpy
 pathlib
 cloudpathlib
+Click
