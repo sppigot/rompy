@@ -6,6 +6,27 @@
 # The full license is in the LICENSE file, distributed with this software.
 # -----------------------------------------------------------------------------
 
+from typing import Optional
+
+from pydantic import BaseModel
+
+
+# pydantic class to apply all the filters to the dataset
+class Filter(BaseModel):
+    sort: Optional[dict] = {}
+    subset: Optional[dict] = {}
+    crop: Optional[dict] = {}
+    timenorm: Optional[dict] = {}
+    rename: Optional[dict] = {}
+
+    def __call__(self, ds):
+        filters = get_filter_fns()
+        for fn in filters:
+            params = self.dict()[fn]
+            if params:
+                ds = filters[fn](ds, **params)
+        return ds
+
 
 def sort_filter(ds, coords=None):
     for c in coords:

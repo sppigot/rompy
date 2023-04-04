@@ -2,26 +2,26 @@ metadata:
   version: 1
 
 sources:
-  wave_glob05_gfs_v1:
-    args:
-      fmt_fields:
-        output: 
-        - 'spec'
-        type: 
-        - 'site'
-        grid: 
-        - 'glob'
-        fcdate:
-        - '20230119'
-        - '20230119'
-        hr:
-        - '00'
-      fn_fmt: '{grid}.{output}.{fcdate}T{hr}.nc'
-      urlpath: "gs://oceanum-prod-flush-1m/ww3/glob05_gfs/post/{type}/{grid}-{output}-{fcdate}T{hr}.zarr"
-    description: Oceanum Wavewatch III forecasts
-    driver: rompy.intake.ZarrFCStackSource
-    metadata:
-      catalog_dir: ''
+  # wave_glob05_gfs_v1:
+  #   args:
+  #     fmt_fields:
+  #       output: 
+  #       - 'spec'
+  #       type: 
+  #       - 'site'
+  #       grid: 
+  #       - 'glob'
+  #       fcdate:
+  #       - '20230119'
+  #       - '20230119'
+  #       hr:
+  #       - '00'
+  #     fn_fmt: '{grid}.{output}.{fcdate}T{hr}.nc'
+  #     urlpath: "gs://oceanum-prod-flush-1m/ww3/glob05_gfs/post/{type}/{grid}-{output}-{fcdate}T{hr}.zarr"
+  #   description: Oceanum Wavewatch III forecasts
+  #   driver: rompy.intake.ZarrFCStackSource
+  #   metadata:
+  #     catalog_dir: ''
 
   oceanum_wave_glob05_era5_v1_spec:
     description: Oceanum WAVEWATCHIII Global wave hindcast at 0.5-degree forced with ERA5, wave spectra
