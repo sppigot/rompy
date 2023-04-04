@@ -11,10 +11,17 @@ import inspect
 import json
 import logging
 import os
+import platform
 import zipfile as zf
+from datetime import datetime
 
+import cookiecutter.config as cc_config
+import cookiecutter.generate as cc_generate
+import cookiecutter.repository as cc_repository
 import numpy as np
+from pydantic import BaseModel
 from pydantic import BaseModel as pyBaseModel
+from pydantic import PrivateAttr, validator
 from pydantic_numpy import NDArray
 from shapely.geometry import Polygon
 
@@ -34,13 +41,38 @@ logger = logging.getLogger(__name__)
 class BaseModel(pyBaseModel):
     """A base class for all models"""
 
-    run_id: str = "test_base"
+    run_id: str = "run_id"
+    compute_start: datetime = datetime(2020, 2, 21, 4)
+    compute_interval: str = "0.25 HR"
+    compute_stop: datetime = datetime(2020, 2, 24, 4)
     output_dir: str = "simulations"
-    template: Template
+    template: Template = Template()
     _model: str | None = None
 
     class Config:
         underscore_attrs_are_private = True
+
+    @validator("compute_start", "compute_stop", pre=True)
+    def validate_compute_start_stop(cls, v):
+        if isinstance(v, datetime):
+            return v
+        for fmt in [
+            "%Y%m%d.%H%M%S",
+            "%Y%m%d.%H%M",
+            "%Y%m%dT%H%M%S",
+            "%Y%m%dT%H%M",
+            "%Y%m%dT%H",
+            "%Y%m%dT",
+            "%Y-%m-%dT%H%M",
+            "%Y-%m-%dT%H",
+            "%Y-%m-%dT",
+        ]:
+            try:
+                ret = datetime.strptime(v, fmt)
+                return ret
+            except ValueError:
+                pass
+        return v
 
     def _write_template_json(self) -> str:
         """Write the cookiecutter.json file from pydantic template
@@ -110,13 +142,35 @@ class BaseModel(pyBaseModel):
         -------
         staging_dir : str
         """
-        # TODO need to work out a better way of handing this... with nests?
-        self.template.run_id = self.run_id
-        self.template.output_dir = self.output_dir
-        staging_dir = self.template.generate(self.output_dir)
-        # Save the run settings
-        self.save_settings()
+        config_dict = cc_config.get_user_config(
+            config_file=None,
+            default_config=False,
+        )
 
+        repo_dir, cleanup = cc_repository.determine_repo_dir(
+            template=self.template.template,
+            abbreviations=config_dict["abbreviations"],
+            clone_to_dir=config_dict["cookiecutters_dir"],
+            checkout=self.template.checkout,
+            no_input=True,
+        )
+
+        cc_full = {}
+        cc_full["cookiecutter"] = self.dict()
+        cc_full["cookiecutter"].update(self.template.dict())
+        cc_full["cookiecutter"].update({"_template": repo_dir})
+        cc_full["cookiecutter"].update({"_generated_at": str(datetime.utcnow())})
+        cc_full["cookiecutter"].update({"_generated_by": os.environ.get("USER")})
+        cc_full["cookiecutter"].update({"_generated_on": platform.node()})
+        cc_full["cookiecutter"].update({"_datefmt": self.template._datefmt})
+
+        staging_dir = cc_generate.generate_files(
+            repo_dir=repo_dir,
+            context=cc_full,
+            overwrite_if_exists=True,
+            output_dir=self.output_dir,
+        )
+        logger.info(f"Successfully generated project in {self.output_dir}")
         return staging_dir
 
     def zip(self) -> str:
