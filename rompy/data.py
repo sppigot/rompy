@@ -48,19 +48,30 @@ class DataBlob(BaseModel):
 
 
 class DataGrid(BaseModel):
+    """Data source for model ingestion. This is intended to be a generic data source
+    for xarray datasets that need to be filtered and written to netcdf.
+
+    Must be a local file (path) or a remote file (url) or intake and dataset id combination.
+
+    Parameters
+    ----------
+    path: str
+    url: str
+    catalog: str
+    dataset: str
+    filter: Filter
+    xarray_kwargs: dict
+    netcdf_kwargs: dict
+
+    """
+
     path: Optional[pathlib.Path]
     url: Optional[cloudpathlib.CloudPath]
     catalog: Optional[str]  # TODO make this smarter
     dataset: Optional[str]
-    variable: Optional[str] = None
-    start: Optional[str] = None
-    end: Optional[str] = None
-    bbox: Optional[str] = None
-    variables: Optional[list[str]] = None
-    chunks: Optional[dict] = None
     filter: Optional[Filter] = None
-    mode: Optional[str] = "w"
-    format: Optional[str] = "NETCDF4"
+    xarray_kwargs: Optional[dict] = None
+    netcdf_kwargs: Optional[dict] = dict(mode="w", format="NETCDF4")
     _ds: Optional[xr.Dataset] = None
 
     class Config:
@@ -83,12 +94,13 @@ class DataGrid(BaseModel):
 
     @property
     def ds(self):
+        """Return the xarray dataset for this data source."""
         if self._ds is not None:
             return self._ds
         if self.path:
-            ds = xr.open_dataset(self.path)
+            ds = xr.open_dataset(self.path, **self.xarray_kwargs)
         elif self.url:
-            ds = xr.open_dataset(self.url)
+            ds = xr.open_dataset(self.url, **self.xarray_kwargs)
         elif self.catalog:
             cat = intake.open_catalog(self.catalog)
             ds = cat[self.dataset].to_dask()
@@ -98,4 +110,4 @@ class DataGrid(BaseModel):
     def stage(self, dest: str) -> "DataGrid":
         """Write the data source to a new location"""
         self.ds.to_netcdf(dest, mode=self.mode, format=self.format)
-        return DataGrid(path=dest)
+        return DataGrid(path=dest, **self.netcdf_kwargs)
