@@ -70,7 +70,7 @@ class DataGrid(BaseModel):
     catalog: Optional[str]  # TODO make this smarter
     dataset: Optional[str]
     filter: Optional[Filter] = None
-    xarray_kwargs: Optional[dict] = None
+    xarray_kwargs: Optional[dict] = {}
     netcdf_kwargs: Optional[dict] = dict(mode="w", format="NETCDF4")
     _ds: Optional[xr.Dataset] = None
 
@@ -104,7 +104,10 @@ class DataGrid(BaseModel):
         elif self.catalog:
             cat = intake.open_catalog(self.catalog)
             ds = cat[self.dataset].to_dask()
-        self._ds = self.filter(ds)
+        if self.filter:
+            self._ds = self.filter(ds)
+        else:
+            self._ds = ds
         return self._ds
 
     def stage(self, dest: str) -> "DataGrid":
