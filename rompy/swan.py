@@ -22,6 +22,13 @@ class SwanModel(BaseModel):
     model: str = "SWAN"
     config: SwanConfig = SwanConfig()
 
+    def __init__(self, **data):
+        super().__init__(**data)
+
+        # if grid start is not set, set to compute_start
+        if not self.config.out_start:
+            self.config.out_start = self.compute_start
+
     def _get_grid(self, key=None):
         from intake.source.utils import reverse_format
 

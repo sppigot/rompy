@@ -225,6 +225,9 @@ class BaseModel(pyBaseModel):
     def __call__(self):
         return self.generate()
 
+    def yaml(self, **kwargs):
+        return yaml.dump(self.dict(), **kwargs)
+
 
 class BaseGrid(pyBaseModel):
     """An object which provides an abstract representation of a grid in some geographic space
@@ -317,6 +320,8 @@ class BaseGrid(pyBaseModel):
         return hull_x, hull_y
 
     def plot(self, fscale=10):
+        """Plot the grid"""
+
         import cartopy.crs as ccrs
         import cartopy.feature as cfeature
         import matplotlib.pyplot as plt
