@@ -30,9 +30,9 @@ def test_swan_input():
     model = SwanModel(
         run_id="test_swan",
         output_dir="simulations",
-        template=dict(friction="MAD"),
+        config=dict(friction="MAD"),
     )
-    assert model.template.friction == "MAD"
+    assert model.config.friction == "MAD"
 
 
 def test_failing_friction():
@@ -40,5 +40,5 @@ def test_failing_friction():
         model = SwanModel(
             run_id="test_swan",
             output_dir="simulations",
-            template=dict(friction="BAD"),
+            config=dict(friction="BAD"),
         )

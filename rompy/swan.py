@@ -11,15 +11,16 @@ import logging
 import numpy as np
 import xarray as xr
 
+from rompy.configurations.swan import SwanConfig
+
 from .core import BaseGrid, BaseModel
-from .templates.swan.model import Template
 
 logger = logging.getLogger(__name__)
 
 
 class SwanModel(BaseModel):
     model: str = "SWAN"
-    template: Template = Template()
+    config: SwanConfig = SwanConfig()
 
     def _get_grid(self, key=None):
         from intake.source.utils import reverse_format

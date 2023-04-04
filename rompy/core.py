@@ -25,7 +25,7 @@ from pydantic import PrivateAttr, validator
 from pydantic_numpy import NDArray
 from shapely.geometry import Polygon
 
-from rompy.templates.base.model import Template
+from rompy.configurations.base import BaseConfig
 
 from .types import Bbox
 from .utils import json_serial
@@ -61,7 +61,7 @@ class BaseModel(pyBaseModel):
     compute_interval: str = "0.25 HR"
     compute_stop: datetime = datetime(2020, 2, 24, 4)
     output_dir: str = "simulations"
-    template: Template = Template()
+    config: BaseConfig = BaseConfig()
     _model: str | None = None
 
     class Config:
@@ -141,7 +141,7 @@ class BaseModel(pyBaseModel):
         """
         settingsfile = os.path.join(self.staging_dir, "settings.json")
         with open(settingsfile, "w") as f:
-            f.write(self.template.json())
+            f.write(self.json())
         return settingsfile
 
     @classmethod
@@ -163,21 +163,21 @@ class BaseModel(pyBaseModel):
         )
 
         repo_dir, cleanup = cc_repository.determine_repo_dir(
-            template=self.template.template,
+            template=self.config.template,
             abbreviations=config_dict["abbreviations"],
             clone_to_dir=config_dict["cookiecutters_dir"],
-            checkout=self.template.checkout,
+            checkout=self.config.checkout,
             no_input=True,
         )
 
         cc_full = {}
         cc_full["cookiecutter"] = self.dict()
-        cc_full["cookiecutter"].update(self.template.dict())
+        cc_full["cookiecutter"].update(self.config.dict())
         cc_full["cookiecutter"].update({"_template": repo_dir})
         cc_full["cookiecutter"].update({"_generated_at": str(datetime.utcnow())})
         cc_full["cookiecutter"].update({"_generated_by": os.environ.get("USER")})
         cc_full["cookiecutter"].update({"_generated_on": platform.node()})
-        cc_full["cookiecutter"].update({"_datefmt": self.template._datefmt})
+        cc_full["cookiecutter"].update({"_datefmt": self.config._datefmt})
 
         staging_dir = cc_generate.generate_files(
             repo_dir=repo_dir,
