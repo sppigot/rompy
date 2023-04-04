@@ -7,7 +7,6 @@
 # -----------------------------------------------------------------------------
 
 import glob
-import inspect
 import json
 import logging
 import os
@@ -19,9 +18,10 @@ import cookiecutter.config as cc_config
 import cookiecutter.generate as cc_generate
 import cookiecutter.repository as cc_repository
 import numpy as np
+import yaml
 from pydantic import BaseModel
 from pydantic import BaseModel as pyBaseModel
-from pydantic import PrivateAttr, validator
+from pydantic import validator
 from pydantic_numpy import NDArray
 from shapely.geometry import Polygon
 
@@ -123,9 +123,9 @@ class BaseModel(pyBaseModel):
         -------
         settingsfile : str
         """
-        settingsfile = os.path.join(self.staging_dir, "settings.json")
+        settingsfile = os.path.join(self.output_dir, "settings_{self.run_id}.yaml")
         with open(settingsfile, "w") as f:
-            f.write(self.json())
+            f.write(self.yaml())
         return settingsfile
 
     @classmethod
@@ -144,8 +144,9 @@ class BaseModel(pyBaseModel):
         logger.info("")
         logger.info("-----------------------------------------------------")
         logger.info("Model settings:")
-        logger.info(self.json(indent=4))
-        logger.info("Generating model input files")
+        print("")
+        logger.info(self.yaml(indent=2))
+        logger.info(f"Template used to generate model: {self.config.template}")
 
         config_dict = cc_config.get_user_config(
             config_file=None,
@@ -177,6 +178,7 @@ class BaseModel(pyBaseModel):
         )
         logger.info("")
         logger.info(f"Successfully generated project in {self.output_dir}")
+        logger.info(f"Settings saved to {self.save_settings()}")
         logger.info("-----------------------------------------------------")
         return staging_dir
 
