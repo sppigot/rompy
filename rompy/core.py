@@ -39,7 +39,22 @@ logger = logging.getLogger(__name__)
 
 
 class BaseModel(pyBaseModel):
-    """A base class for all models"""
+    """A base class for all models
+
+    Parameters
+    ----------
+
+    run_id : str
+        The run id
+    compute_start : datetime
+        The start time of the simulation
+    compute_interval : str
+        The time interval of the simulation
+    compute_stop : datetime
+        The stop time of the simulation
+    output_dir : str
+        The output directory
+    """
 
     run_id: str = "run_id"
     compute_start: datetime = datetime(2020, 2, 21, 4)
