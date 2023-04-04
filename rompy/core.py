@@ -114,6 +114,9 @@ class BaseModel(pyBaseModel):
         -------
         staging_dir : str
         """
+        # TODO need to work out a better way of handing this... with nests?
+        self.template.run_id = self.run_id
+        self.template.output_dir = self.output_dir
         staging_dir = self.template.generate(self.output_dir)
         # Save the run settings
         self.save_settings()

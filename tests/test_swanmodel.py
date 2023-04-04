@@ -1,4 +1,5 @@
 import os
+import shutil
 
 import pytest
 from utils import compare_files
@@ -19,9 +20,10 @@ def model():
 def test_generate(model):
     model.generate()
     compare_files(
-        os.path.join(here, "simulations/test_base/INPUT"),
-        os.path.join(here, "simulations/test_base_ref/INPUT"),
+        os.path.join(here, "simulations/test_swan/INPUT"),
+        os.path.join(here, "simulations/test_swan_ref/INPUT"),
     )
+    shutil.rmtree(os.path.join(here, "simulations/test_swan"))
 
 
 def test_swan_input():
