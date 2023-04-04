@@ -22,6 +22,12 @@ class OutputLocs(BaseModel):
 
     coords: List[Coordinate] = [["115.61", "-32.618"], ["115.686067", "-32.532381"]]
 
+    def __repr__(self):
+        ret = __class__.__name__ + "\n"
+        for coord in self.coords:
+            ret += f"  {coord[0]} {coord[1]}\n"
+        return ret
+
 
 class SwanConfig(BaseConfig):
     """SWAN configuration
