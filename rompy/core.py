@@ -141,6 +141,12 @@ class BaseModel(pyBaseModel):
         -------
         staging_dir : str
         """
+        logger.info("")
+        logger.info("-----------------------------------------------------")
+        logger.info("Model settings:")
+        logger.info(self.json(indent=4))
+        logger.info("Generating model input files")
+
         config_dict = cc_config.get_user_config(
             config_file=None,
             default_config=False,
@@ -169,7 +175,9 @@ class BaseModel(pyBaseModel):
             overwrite_if_exists=True,
             output_dir=self.output_dir,
         )
+        logger.info("")
         logger.info(f"Successfully generated project in {self.output_dir}")
+        logger.info("-----------------------------------------------------")
         return staging_dir
 
     def zip(self) -> str:
@@ -225,6 +233,12 @@ class BaseGrid(pyBaseModel):
     NumPy array's representing the vertices or nodes of some structured or unstructured grid,
     its bounding box and a boundary polygon. No knowledge of the grid connectivity is expected.
 
+    Parameters
+    ----------
+    x : numpy.ndarray
+        A 1D array of x coordinates
+    y : numpy.ndarray
+        A 1D array of y coordinates
     """
 
     x: NDArray
