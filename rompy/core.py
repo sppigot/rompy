@@ -25,7 +25,7 @@ from pydantic import PrivateAttr, validator
 from pydantic_numpy import NDArray
 from shapely.geometry import Polygon
 
-from rompy.configurations.base import BaseConfig
+from rompy.configuration.base import BaseConfig
 
 from .types import Bbox
 from .utils import json_serial

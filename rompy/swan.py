@@ -11,7 +11,7 @@ import logging
 import numpy as np
 import xarray as xr
 
-from rompy.configurations.swan import SwanConfig
+from rompy.configuration.swan import SwanConfig
 
 from .core import BaseGrid, BaseModel
 

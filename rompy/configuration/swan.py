@@ -7,7 +7,7 @@ from typing import List
 from pydantic import BaseModel, PrivateAttr, validator
 
 from rompy import TEMPLATES_DIR
-from rompy.configurations.base import BaseConfig
+from rompy.configuration.base import BaseConfig
 from rompy.types import Coordinate
 
 
