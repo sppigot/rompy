@@ -54,6 +54,8 @@ class BaseModel(pyBaseModel):
         The stop time of the simulation
     output_dir : str
         The output directory
+    config : BaseConfig
+        The configuration object
     """
 
     run_id: str = "run_id"
@@ -88,24 +90,6 @@ class BaseModel(pyBaseModel):
             except ValueError:
                 pass
         return v
-
-    def _write_template_json(self) -> str:
-        """Write the cookiecutter.json file from pydantic template
-
-        returns
-        -------
-        template : str
-        """
-        template = os.path.dirname(inspect.getmodule(self.template).__file__)
-        ccjson = os.path.join(template, "cookiecutter.json")
-        with open(ccjson, "w") as f:
-            d = self.template.dict()
-            d.update({"_template": template})
-            d.update({"_generated_at": self.template._generated_at})
-            d.update({"_generated_by": self.template._generated_by})
-            d.update({"_generated_on": self.template._generated_on})
-            f.write(json.dumps(d, default=json_serial, indent=4))
-        return template
 
     @property
     def staging_dir(self):
