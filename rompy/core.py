@@ -19,7 +19,6 @@ import cookiecutter.generate as cc_generate
 import cookiecutter.repository as cc_repository
 import numpy as np
 import yaml
-from pydantic import BaseModel
 from pydantic import BaseModel as pyBaseModel
 from pydantic import validator
 from pydantic_numpy import NDArray
@@ -28,7 +27,6 @@ from shapely.geometry import Polygon
 from rompy.configuration.base import BaseConfig
 
 from .types import Bbox
-from .utils import json_serial
 
 # pydantic interface to BaseNumericalModel
 # https://pydantic-docs.helpmanual.io/usage/models/
