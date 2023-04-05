@@ -123,7 +123,7 @@ class BaseModel(pyBaseModel):
         -------
         settingsfile : str
         """
-        settingsfile = os.path.join(self.output_dir, "settings_{self.run_id}.yaml")
+        settingsfile = os.path.join(self.output_dir, f"settings_{self.run_id}.yaml")
         with open(settingsfile, "w") as f:
             f.write(self.yaml())
         return settingsfile
@@ -219,10 +219,10 @@ class BaseModel(pyBaseModel):
         return zip_fn
 
     def __str__(self):
-        return self.json()
+        return self.yaml()
 
     def __repr__(self):
-        return self.json()
+        return self.yaml()
 
     def __call__(self):
         return self.generate()

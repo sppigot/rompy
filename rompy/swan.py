@@ -7,6 +7,7 @@
 # -----------------------------------------------------------------------------
 
 import logging
+import os
 
 import numpy as np
 import xarray as xr
@@ -41,6 +42,28 @@ class SwanModel(BaseModel):
             fmt += " EXC {exc:f}"
         grid_params = reverse_format(fmt, grid_spec)
         return SwanGrid(**grid_params)
+
+    @property
+    def subnests(self):
+        """Process subnests for SWAN
+
+        Just a proposal for now. Provides an elegant way of initilising subnests
+        """
+        ii = 1
+        subnests = []
+        for config in self.config.subnests:
+            runconfig = self.dict()
+            runconfig["run_id"] = f"{self.run_id}_subnest{ii}"
+            runconfig["config"] = config
+            subnests.append(SwanModel(**runconfig))
+            ii += 1
+        return subnests
+
+    def generate(self):
+        """Generate SWAN input files"""
+        super().generate()
+        for nest in self.subnests:
+            nest.generate()
 
 
 class SwanGrid(BaseGrid):

@@ -74,6 +74,7 @@ class SwanConfig(BaseConfig):
     friction: str = "MAD"
     friction_coeff: str = "0.1"
     spectra_file: str = "boundary.spec"
+    subnests: List[SwanConfig] = []
 
     @validator("out_start", "out_intvl", pre=True)
     def validate_out_start_intvl(cls, v):

@@ -30,16 +30,17 @@ class BaseConfig(BaseModel):
 
     Parameters
     ----------
-    checkout : str
-        The git checkout branch, tag or commit
     template : str
         The template directory
+    checkout : str
+        The git checkout branch, tag or commit. Only used if the template is a git repository
     _datefmt : str
         The date format to be rendered in the template
     """
 
     template: str = os.path.join(TEMPLATES_DIR, "base")
     checkout: str = "main"
+
     _datefmt: str = "%Y%m%d.%H%M%S"
     _generated_at: str = PrivateAttr()
     _generated_on: str = PrivateAttr()
