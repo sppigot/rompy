@@ -22,7 +22,9 @@ class DataBlob(BaseModel):
     Parameters
     ----------
     path: str
+          Optional local file path
     url: str
+            Optional remote file url
 
 
     """
@@ -56,10 +58,15 @@ class DataGrid(BaseModel):
     Parameters
     ----------
     path: str
+            Optional local file path
     url: str
+            Optional remote file url
     catalog: str
+            Optional intake catalog
     dataset: str
+            Optional intake dataset id
     filter: Filter
+            Optional filter specification to apply to the dataset
     xarray_kwargs: dict
     netcdf_kwargs: dict
 
