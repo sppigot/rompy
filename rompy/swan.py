@@ -7,7 +7,6 @@
 # -----------------------------------------------------------------------------
 
 import logging
-import os
 
 import numpy as np
 import xarray as xr
@@ -15,6 +14,7 @@ import xarray as xr
 from rompy.configuration.swan import SwanConfig
 
 from .core import BaseGrid, BaseModel
+from .data import DataGrid
 
 logger = logging.getLogger(__name__)
 
@@ -52,12 +52,33 @@ class SwanModel(BaseModel):
         ii = 1
         subnests = []
         for config in self.config.subnests:
-            runconfig = self.dict()
-            runconfig["run_id"] = f"{self.run_id}_subnest{ii}"
-            runconfig["config"] = config
-            subnests.append(SwanModel(**runconfig))
+            self.reinit(
+                instance=self, run_id=f"{self.run_id}_subnest{ii}", config=config
+            )
             ii += 1
         return subnests
+
+    @classmethod
+    def reinit(cls, instance, run_id, **kwargs):
+        """Re-initialise a model with the same configuration
+
+        Parameters
+        ----------
+        run_id : str
+            run_id of the previous run
+        **kwargs
+            Any additional keyword arguments to pass to the model initialisation
+
+        Returns
+        -------
+        SwanModel
+            A new model instance
+        """
+        kwg = instance.dict()
+        kwg.pop("run_id")
+        kwg.update(kwargs)
+        model = cls(run_id=run_id, **kwg)
+        return model
 
     def generate(self):
         """Generate SWAN input files"""
@@ -529,3 +550,22 @@ class Swan_accessor(object):
                     j += 1
 
         return bound_string
+
+
+class SwanDataGrid(DataGrid):
+    """This class is used to write SWAN data from a dataset.
+
+    parameters
+    ----------
+
+    """
+
+    def stage(self, staging_dir: str, grid: SwanGrid = None):
+        inpwind, readwind = self.ds.swan.to_inpgrid(
+            dest_path=os.path.join(staging_dir, f"{self.type}.nc"),
+            var="WIND",
+            grid=grid,
+            z1="u10",
+            z2="v10",
+        )
+        return inpwind, readwind
