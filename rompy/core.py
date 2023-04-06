@@ -13,20 +13,19 @@ import os
 import platform
 import zipfile as zf
 from datetime import datetime
+from typing import Optional
 
 import cookiecutter.config as cc_config
 import cookiecutter.generate as cc_generate
 import cookiecutter.repository as cc_repository
 import numpy as np
-import yaml
-from pydantic import BaseModel as pyBaseModel
 from pydantic import validator
 from pydantic_numpy import NDArray
 from shapely.geometry import Polygon
 
 from rompy.configuration.base import BaseConfig
 
-from .types import Bbox
+from .types import Bbox, RompyBaseModel
 
 # pydantic interface to BaseNumericalModel
 # https://pydantic-docs.helpmanual.io/usage/models/
@@ -36,7 +35,7 @@ from .types import Bbox
 logger = logging.getLogger(__name__)
 
 
-class BaseModel(pyBaseModel):
+class BaseModel(RompyBaseModel):
     """A base class for all models
 
     Parameters
@@ -216,20 +215,11 @@ class BaseModel(pyBaseModel):
 
         return zip_fn
 
-    def __str__(self):
-        return self.yaml()
-
-    def __repr__(self):
-        return self.yaml()
-
     def __call__(self):
         return self.generate()
 
-    def yaml(self, **kwargs):
-        return yaml.dump(self.dict(), **kwargs)
 
-
-class BaseGrid(pyBaseModel):
+class BaseGrid(RompyBaseModel):
     """An object which provides an abstract representation of a grid in some geographic space
 
     This is the base class for all Grid objects. The minimum representation of a grid are two
@@ -244,8 +234,10 @@ class BaseGrid(pyBaseModel):
         A 1D array of y coordinates
     """
 
-    x: NDArray
-    y: NDArray
+    # Note these are here to that it doesn't break the SWAN inheritance. Need to think
+    # about this a bit more
+    x: Optional[NDArray]
+    y: Optional[NDArray]
 
     @property
     def minx(self) -> float:

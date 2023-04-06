@@ -8,11 +8,11 @@
 
 from typing import Optional
 
-from pydantic import BaseModel
+from .types import RompyBaseModel
 
 
 # pydantic class to apply all the filters to the dataset
-class Filter(BaseModel):
+class Filter(RompyBaseModel):
     sort: Optional[dict] = {}
     subset: Optional[dict] = {}
     crop: Optional[dict] = {}

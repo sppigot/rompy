@@ -5,14 +5,18 @@ import os
 from datetime import datetime
 from typing import Optional
 
+import yaml
 from pydantic import BaseModel, PrivateAttr, validator
 
 from rompy import TEMPLATES_DIR
+from rompy.types import RompyBaseModel
+
+# from rompy.data import DataBlob, DataGrid
 
 logger = logging.getLogger(__name__)
 
 
-class BaseConfig(BaseModel):
+class BaseConfig(RompyBaseModel):
     """A base class for all templates
 
     Parameters

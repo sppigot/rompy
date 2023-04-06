@@ -9,11 +9,12 @@ import xarray as xr
 from pydantic import BaseModel, FilePath, FileUrl, root_validator, validator
 
 from .filters import Filter
+from .types import RompyBaseModel
 
 # from .filters import lonlat_filter, time_filter, variable_filter
 
 
-class DataBlob(BaseModel):
+class DataBlob(RompyBaseModel):
     """Data source for model ingestion. This is intended to be a generic data source
     for files that simply need to be copied to the model directory.
 
@@ -49,7 +50,7 @@ class DataBlob(BaseModel):
         return DataBlob(path=dest)
 
 
-class DataGrid(BaseModel):
+class DataGrid(RompyBaseModel):
     """Data source for model ingestion. This is intended to be a generic data source
     for xarray datasets that need to be filtered and written to netcdf.
 
@@ -72,6 +73,7 @@ class DataGrid(BaseModel):
 
     """
 
+    type: str
     path: Optional[pathlib.Path]
     url: Optional[cloudpathlib.CloudPath]
     catalog: Optional[str]  # TODO make this smarter
@@ -79,7 +81,6 @@ class DataGrid(BaseModel):
     filter: Optional[Filter] = None
     xarray_kwargs: Optional[dict] = {}
     netcdf_kwargs: Optional[dict] = dict(mode="w", format="NETCDF4")
-    _ds: Optional[xr.Dataset] = None
 
     class Config:
         underscore_attrs_are_private = True
@@ -117,7 +118,8 @@ class DataGrid(BaseModel):
             self._ds = ds
         return self._ds
 
-    def stage(self, dest: str) -> "DataGrid":
+    def stage(self, stage_dir: str) -> "DataGrid":
         """Write the data source to a new location"""
+        dest = os.path.join(stage_dir, f"{type}.nc")
         self.ds.to_netcdf(dest, mode=self.mode, format=self.format)
         return DataGrid(path=dest, **self.netcdf_kwargs)
