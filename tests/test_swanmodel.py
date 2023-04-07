@@ -4,6 +4,7 @@ import shutil
 import pytest
 from utils import compare_files
 
+from rompy.configuration.swan import SwanConfig
 from rompy.swan import SwanModel
 
 here = os.path.dirname(os.path.abspath(__file__))
@@ -14,6 +15,15 @@ def model():
     return SwanModel(
         run_id="test_swan",
         output_dir=os.path.join(here, "simulations"),
+    )
+
+
+@pytest.fixture
+def nesting():
+    return SwanModel(
+        run_id="test_nesting",
+        output_dir=os.path.join(here, "simulations"),
+        config=SwanConfig(subnests=[SwanConfig(), SwanConfig(subnests=[SwanConfig()])]),
     )
 
 
@@ -42,3 +52,12 @@ def test_failing_friction():
             output_dir="simulations",
             config=dict(friction="BAD"),
         )
+
+
+def test_nesting(nesting):
+    nesting.generate()
+    # compare_files(
+    #     os.path.join(here, "simulations/test_swan/INPUT"),
+    #     os.path.join(here, "simulations/test_swan_ref/INPUT"),
+    # )
+    # shutil.rmtree(os.path.join(here, "simulations/test_swan"))

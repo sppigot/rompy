@@ -359,6 +359,12 @@ class BaseGrid(RompyBaseModel):
         ax.plot(bx, by, lw=2, color="k")
         return fig, ax
 
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.x}, {self.y})"
+
+    def __eq__(self, other):
+        return self.dict() == other.dict()
+
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
