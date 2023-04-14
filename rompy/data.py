@@ -73,17 +73,16 @@ class DataGrid(RompyBaseModel):
 
     """
 
-    type: str
     path: Optional[pathlib.Path]
     url: Optional[cloudpathlib.CloudPath]
     catalog: Optional[str]  # TODO make this smarter
     dataset: Optional[str]
-    filter: Optional[Filter] = None
+    filter: Optional[Filter] = Filter()
+    latname: Optional[str] = "latitude"
+    lonname: Optional[str] = "longitude"
+    timename: Optional[str] = "time"
     xarray_kwargs: Optional[dict] = {}
     netcdf_kwargs: Optional[dict] = dict(mode="w", format="NETCDF4")
-
-    class Config:
-        underscore_attrs_are_private = True
 
     @root_validator
     def check_path_or_url_or_intake(cls, values):
@@ -100,11 +99,18 @@ class DataGrid(RompyBaseModel):
             raise ValueError("Must provide only one of a path url or catalog")
         return values
 
+    def _filter_grid(self, grid, start=None, end=None, buffer=0.1):
+        """Define the filters to use to extract data to this grid"""
+        minLon, minLat, maxLon, maxLat = grid.bbox()
+        self.filter.crop = {
+                self.lonname: slice(minLon - buffer, maxLon + buffer),
+                self.latname: slice(minLat - buffer, maxLat + buffer),
+                self.timename: slice(start, end)
+            }
+
     @property
     def ds(self):
         """Return the xarray dataset for this data source."""
-        if self._ds is not None:
-            return self._ds
         if self.path:
             ds = xr.open_dataset(self.path, **self.xarray_kwargs)
         elif self.url:
@@ -113,10 +119,8 @@ class DataGrid(RompyBaseModel):
             cat = intake.open_catalog(self.catalog)
             ds = cat[self.dataset].to_dask()
         if self.filter:
-            self._ds = self.filter(ds)
-        else:
-            self._ds = ds
-        return self._ds
+            ds = self.filter(ds)
+        return ds
 
     def stage(self, stage_dir: str) -> "DataGrid":
         """Write the data source to a new location"""
