@@ -19,7 +19,7 @@ import cookiecutter.config as cc_config
 import cookiecutter.generate as cc_generate
 import cookiecutter.repository as cc_repository
 import numpy as np
-from pydantic import validator
+from pydantic import validator, root_validator
 from pydantic_numpy import NDArray
 from shapely.geometry import Polygon
 
@@ -364,6 +364,82 @@ class BaseGrid(RompyBaseModel):
 
     def __eq__(self, other):
         return self.dict() == other.dict()
+
+class RegularGrid(BaseGrid):
+    x0: Optional[float] = None
+    y0: Optional[float] = None
+    rot: Optional[float] = 0.0
+    dx: Optional[float] = None
+    dy: Optional[float] = None
+    nx: Optional[int] = None
+    ny: Optional[int] = None
+    _x0: Optional[float]
+    _y0: Optional[float]
+    _rot: Optional[float]
+    _dx: Optional[float]
+    _dy: Optional[float]
+    _nx: Optional[int]
+    _ny: Optional[int]
+
+    @root_validator
+    def validate_grid(cls, values):
+        x = values["x"]
+        y = values["y"]
+        x0 = values["x0"]
+        y0 = values["y0"]
+        dx = values["dx"]
+        dy = values["dy"]
+        nx = values["nx"]
+        ny = values["ny"]
+
+        if isinstance(x, np.ndarray) or isinstance(y, np.ndarray):
+            if any([x0, y0, dx, dy, nx, ny]):
+                raise ValueError(
+                    "x, y provided explicitly, cant process x0, y0, dx, dy, nx, ny"
+                )
+            return values
+        for var in [x0, y0, dx, dy, nx, ny]:
+            if var is None:
+                raise ValueError(
+                    "x0, y0, dx, dy, nx, ny must be provided for REG grid"
+                )
+        return values
+
+    def __init__(self, **data):
+        super().__init__(**data)
+        if not isinstance(self.x, np.ndarray) or not isinstance(self.y, np.ndarray):
+            self._x0 = self.x0
+            self._y0 = self.y0
+            self._rot = self.rot
+            self._dx = self.dx
+            self._dy = self.dy
+            self._nx = self.nx
+            self._ny = self.ny
+            self._regen_grid()
+
+    def _regen_grid(self):
+        _x, _y = self._gen_reg_cgrid()
+        self.x = _x
+        self.y = _y
+
+    def _gen_reg_cgrid(self):
+        # Grid at origin
+        i = np.arange(0.0, self.dx * self.nx, self.dx)
+        j = np.arange(0.0, self.dy * self.ny, self.dy)
+        ii, jj = np.meshgrid(i, j)
+
+        # Rotation
+        alpha = -self.rot * np.pi / 180.0
+        R = np.array([[np.cos(alpha), -np.sin(alpha)], [np.sin(alpha), np.cos(alpha)]])
+        gg = np.dot(np.vstack([ii.ravel(), jj.ravel()]).T, R)
+
+        # Translation
+        x = gg[:, 0] + self.x0
+        y = gg[:, 1] + self.y0
+
+        x = np.reshape(x, ii.shape)
+        y = np.reshape(y, ii.shape)
+        return x, y
 
 
 if __name__ == "__main__":
