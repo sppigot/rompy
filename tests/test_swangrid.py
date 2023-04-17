@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import shapely
 
-from rompy.configuration.swan import SwanGrid
+from rompy.swan import SwanGrid
 
 
 # test class based on pytest fixtures
