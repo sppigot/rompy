@@ -4,7 +4,7 @@ import shutil
 import pytest
 from utils import compare_files
 
-from rompy.swan import SwanModel, SwanConfig
+from rompy.swan import SwanConfig, SwanModel
 
 here = os.path.dirname(os.path.abspath(__file__))
 
@@ -27,12 +27,12 @@ def nesting():
 
 
 def test_generate(model):
-    model.generate()
+    model.config.generate(SwanModel(run_id="test_swan", output_dir="simulations"))
     compare_files(
         os.path.join(here, "simulations/test_swan/INPUT"),
         os.path.join(here, "simulations/test_swan_ref/INPUT"),
     )
-    shutil.rmtree(os.path.join(here, "simulations/test_swan"))
+    # shutil.rmtree(os.path.join(here, "simulations/test_swan"))
 
 
 def test_swan_input():
