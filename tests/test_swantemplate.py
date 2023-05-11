@@ -16,6 +16,36 @@ here = os.path.dirname(os.path.abspath(__file__))
 
 
 @pytest.fixture
+def nc_bathy():
+    # touch temp netcdf file
+    bottom = SwanGrid(
+        x0=115.68, y0=-32.76, rot=77, nx=391, ny=151, dx=0.001, dy=0.001, exc=-99.0
+    )
+    tmp_path = tempfile.mkdtemp()
+    source = os.path.join(tmp_path, "bathy.nc")
+    # calculate lat/lon manually due to rounding errors in arange
+    lat = []
+    for nn in range(bottom.ny):
+        lat.append(bottom.y0 + (nn * bottom.dy))
+    lon = []
+    for nn in range(bottom.nx):
+        lon.append(bottom.x0 + (nn * bottom.dx))
+    ds = xr.Dataset(
+        {
+            "depth": xr.DataArray(
+                np.random.rand(bottom.ny, bottom.nx),
+                dims=["lat", "lon"],
+                coords={"lat": lat, "lon": lon},
+            ),
+        }
+    )
+    ds.to_netcdf(source)
+    return SwanDataGrid(
+        id="bottom", path=source, z1="depth", var="BOTTOM", latname="lat", lonname="lon"
+    )
+
+
+@pytest.fixture
 def nc_data_source():
     # touch temp netcdf file
     # setup to replicate what was already there in the model templates
@@ -60,9 +90,10 @@ def nc_data_source():
 
 
 @pytest.fixture
-def config(nc_data_source):
+def config(nc_data_source, nc_bathy):
     """Create a SwanConfig object."""
-    return SwanConfig(forcing={"wind": nc_data_source})
+    # return SwanConfig(forcing={"wind": nc_data_source, "bottom": nc_bathy})
+    return SwanConfig(forcing={"bottom": nc_bathy, "wind": nc_data_source})
 
 
 def test_swantemplate(config):

@@ -7,8 +7,31 @@ import pytest
 import xarray as xr
 
 from rompy.swan.config import SwanConfig
-from rompy.swan.data import SwanDataGrid
+from rompy.swan.data import Swan_accessor, SwanDataGrid
 from rompy.swan.grid import SwanGrid
+
+
+@pytest.fixture
+def nc_bathy():
+    # touch temp netcdf file
+    tmp_path = tempfile.mkdtemp()
+    source = os.path.join(tmp_path, "bathy.nc")
+    ds = xr.Dataset(
+        {
+            "depth": xr.DataArray(
+                np.random.rand(10, 10),
+                dims=["lat", "lon"],
+                coords={
+                    "lat": np.arange(0, 10),
+                    "lon": np.arange(0, 10),
+                },
+            ),
+        }
+    )
+    ds.to_netcdf(source)
+    return SwanDataGrid(
+        id="bottom", path=source, z1="depth", var="BOTTOM", latname="lat", lonname="lon"
+    )
 
 
 @pytest.fixture
@@ -51,3 +74,8 @@ def test_swandata_write(nc_data_source):
     config_ref += "READINP WIND 1 'wind.grd' 3 0 1 0 FREE\n"
     config = nc_data_source.get(staging_dir, swangrid)
     assert config == config_ref
+
+
+def test_bathy_write(nc_bathy):
+    staging_dir = tempfile.mkdtemp()
+    config = nc_bathy.get(staging_dir)
