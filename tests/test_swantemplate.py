@@ -105,7 +105,7 @@ def test_swantemplate(config):
     )
     config.write(runtime=runtime)
     compare_files(
-        os.path.join(here, "simulations/test_swan_ref/INPUT"),
+        os.path.join(here, "simulations/test_swan_ref/INPUT_NEW"),
         os.path.join(here, "simulations/test_swantemplate/INPUT"),
     )
     shutil.rmtree(os.path.join(here, "simulations/test_swantemplate"))
