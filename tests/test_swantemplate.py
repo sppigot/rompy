@@ -101,7 +101,7 @@ def test_swantemplate(config):
     time = TimeRange(start=datetime(2020, 2, 21, 4), end=datetime(2020, 2, 24, 4))
     runtime = SwanModel(
         run_id="test_swantemplate",
-        output_dir="simulations",
+        output_dir=os.path.join(here, "simulations"),
     )
     config.write(runtime=runtime)
     compare_files(

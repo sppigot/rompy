@@ -26,8 +26,11 @@ def nesting():
     )
 
 
+@pytest.mark.skip(reason="Overlap here with swan temlate tests - need to consolidate")
 def test_generate(model):
-    model.config.generate(SwanModel(run_id="test_swan", output_dir="simulations"))
+    model.config.write(
+        SwanModel(run_id="test_swan", output_dir=os.path.join(here, "simulations"))
+    )
     compare_files(
         os.path.join(here, "simulations/test_swan/INPUT"),
         os.path.join(here, "simulations/test_swan_ref/INPUT"),
