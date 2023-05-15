@@ -102,8 +102,9 @@ def test_swantemplate(config):
     runtime = SwanModel(
         run_id="test_swantemplate",
         output_dir=os.path.join(here, "simulations"),
+        config=config,
     )
-    config.write(runtime=runtime)
+    runtime.generate()
     compare_files(
         os.path.join(here, "simulations/test_swan_ref/INPUT_NEW"),
         os.path.join(here, "simulations/test_swantemplate/INPUT"),
