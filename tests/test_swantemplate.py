@@ -16,6 +16,11 @@ here = os.path.dirname(os.path.abspath(__file__))
 
 
 @pytest.fixture
+def grid():
+    return SwanGrid(x0=115.68, y0=-32.76, dx=0.001, dy=0.001, nx=390, ny=150, rot=77)
+
+
+@pytest.fixture
 def nc_bathy():
     # touch temp netcdf file
     bottom = SwanGrid(
@@ -90,19 +95,22 @@ def nc_data_source():
 
 
 @pytest.fixture
-def config(nc_data_source, nc_bathy):
+def config(grid, nc_data_source, nc_bathy):
     """Create a SwanConfig object."""
     # return SwanConfig(forcing={"wind": nc_data_source, "bottom": nc_bathy})
-    return SwanConfig(forcing={"bottom": nc_bathy, "wind": nc_data_source})
+    return SwanConfig(
+        grid=grid,
+        forcing={"bottom": nc_bathy, "wind": nc_data_source},
+    )
 
 
-def test_swantemplate(config):
+def test_swanbasic(config):
     """Test the swantemplate function."""
     time = TimeRange(start=datetime(2020, 2, 21, 4), end=datetime(2020, 2, 24, 4))
     runtime = SwanModel(
         run_id="test_swantemplate",
         output_dir=os.path.join(here, "simulations"),
-        config={},
+        config=dict(friction_coefficient=0.1),
         template=os.path.join(here, "../rompy/templates/swanbasic"),
     )
     runtime.generate()
@@ -113,7 +121,7 @@ def test_swantemplate(config):
     shutil.rmtree(os.path.join(here, "simulations/test_swantemplatebasic"))
 
 
-def test_swantemplatebasic(config):
+def test_swantemplate(config):
     """Test the swantemplate function."""
     time = TimeRange(start=datetime(2020, 2, 21, 4), end=datetime(2020, 2, 24, 4))
     runtime = SwanModel(
