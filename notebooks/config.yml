@@ -2,7 +2,7 @@
 # Regular example
 
 cgrid:
-  kind: regular
+  type: regular
   mdc: 36
   flow: 0.04
   fhigh: 0.4
@@ -12,7 +12,7 @@ cgrid:
   myc: 10
 
 inpgrid:
-  - kind: regular
+  - type: regular
     inpgrid: bottom
     xpinp: 0.0
     ypinp: 0.0
@@ -22,7 +22,7 @@ inpgrid:
     dxinp: 0.1
     dyinp: 0.1
     excval: -999.0
-  - kind: regular
+  - type: regular
     inpgrid: wind
     xpinp: 0.0
     ypinp: 0.0
@@ -40,7 +40,7 @@ inpgrid:
 
 # Curvilinear example
 cgrid_curvilinear:
-  kind: curvilinear
+  type: curvilinear
   mdc: 36
   flow: 0.04
   fhigh: 0.4
@@ -49,7 +49,7 @@ cgrid_curvilinear:
   fname: grid_coord.txt
 
 inpgrid_curvilinear:
-  - kind: curvilinear
+  - type: curvilinear
     inpgrid: bottom
     mxinp: 10
     myinp: 10
