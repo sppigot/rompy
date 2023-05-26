@@ -2,7 +2,7 @@
 # Regular example
 
 cgrid:
-  type: regular
+  model_type: regular
   mdc: 36
   flow: 0.04
   fhigh: 0.4
@@ -12,7 +12,7 @@ cgrid:
   myc: 10
 
 inpgrid:
-  - type: regular
+  - model_type: regular
     inpgrid: bottom
     xpinp: 0.0
     ypinp: 0.0
@@ -22,7 +22,10 @@ inpgrid:
     dxinp: 0.1
     dyinp: 0.1
     excval: -999.0
-  - type: regular
+    readinp:
+      fname1: bottom.txt
+      idla: 3
+  - model_type: regular
     inpgrid: wind
     xpinp: 0.0
     ypinp: 0.0
@@ -37,19 +40,23 @@ inpgrid:
       delt: PT30M
       tend: '2023-02-01T00:00:00'
       deltfmt: hr
+    readinp:
+      fname1: wind.txt
+      idla: 3
 
 # Curvilinear example
 cgrid_curvilinear:
-  type: curvilinear
+  model_type: curvilinear
   mdc: 36
   flow: 0.04
   fhigh: 0.4
   mxc: 10
   myc: 10
-  fname: grid_coord.txt
+  readcoord:
+    fname: grid_coord.txt
 
 inpgrid_curvilinear:
-  - type: curvilinear
+  - model_type: curvilinear
     inpgrid: bottom
     mxinp: 10
     myinp: 10
@@ -59,3 +66,6 @@ inpgrid_curvilinear:
       delt: PT30M
       tend: '2023-02-01T00:00:00'
       deltfmt: hr
+    readinp:
+      fname1: bottom.txt
+      idla: 3
