@@ -17,8 +17,11 @@ def test_swanbasic():
     runtime = SwanModel(
         run_id="test_swantemplatebasic",
         output_dir=os.path.join(here, "simulations"),
-        config=dict(friction_coefficient=0.1, model_type="base"),
-        template=os.path.join(here, "../rompy/templates/swanbasic"),
+        config=dict(
+            friction_coefficient=0.1,
+            model_type="base",
+            template=os.path.join(here, "../rompy/templates/swanbasic"),
+        ),
     )
     runtime.generate()
     compare_files(

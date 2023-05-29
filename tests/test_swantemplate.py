@@ -9,8 +9,8 @@ import pytest
 import xarray as xr
 from utils import compare_files
 
-from rompy.core import TimeRange
-from rompy.swan import SwanConfig, SwanDataGrid, SwanGrid, SwanModel
+from rompy.core import ModelRun, TimeRange
+from rompy.swan import SwanConfig, SwanDataGrid, SwanGrid
 
 here = os.path.dirname(os.path.abspath(__file__))
 
@@ -108,10 +108,11 @@ def test_swantemplate(config):
     """Test the swantemplate function."""
     time = TimeRange(start=datetime(2020, 2, 21, 4),
                      end=datetime(2020, 2, 24, 4))
-    runtime = SwanModel(
+    runtime = ModelRun(
         run_id="test_swantemplate",
         output_dir=os.path.join(here, "simulations"),
         config=config,
+        template=os.path.join(here, "../rompy/templates/swan"),
     )
     runtime.generate()
     compare_files(
