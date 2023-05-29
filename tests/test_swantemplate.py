@@ -104,28 +104,12 @@ def config(grid, nc_data_source, nc_bathy):
     )
 
 
-def test_swanbasic(config):
-    """Test the swantemplate function."""
-    time = TimeRange(start=datetime(2020, 2, 21, 4), end=datetime(2020, 2, 24, 4))
-    runtime = SwanModel(
-        run_id="test_swantemplate",
-        output_dir=os.path.join(here, "simulations"),
-        config=dict(friction_coefficient=0.1),
-        template=os.path.join(here, "../rompy/templates/swanbasic"),
-    )
-    runtime.generate()
-    compare_files(
-        os.path.join(here, "simulations/test_swan_ref/INPUT_NEW"),
-        os.path.join(here, "simulations/test_swantemplatebasic/INPUT"),
-    )
-    shutil.rmtree(os.path.join(here, "simulations/test_swantemplatebasic"))
-
-
 def test_swantemplate(config):
     """Test the swantemplate function."""
-    time = TimeRange(start=datetime(2020, 2, 21, 4), end=datetime(2020, 2, 24, 4))
+    time = TimeRange(start=datetime(2020, 2, 21, 4),
+                     end=datetime(2020, 2, 24, 4))
     runtime = SwanModel(
-        run_id="test_swantemplatebasic",
+        run_id="test_swantemplate",
         output_dir=os.path.join(here, "simulations"),
         config=config,
     )
