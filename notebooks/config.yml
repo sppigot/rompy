@@ -13,7 +13,7 @@ cgrid:
 
 inpgrid:
   - model_type: regular
-    inpgrid: bottom
+    grid_type: bottom
     xpinp: 0.0
     ypinp: 0.0
     alpinp: 0.0
@@ -26,7 +26,7 @@ inpgrid:
       fname1: bottom.txt
       idla: 3
   - model_type: regular
-    inpgrid: wind
+    grid_type: wind
     xpinp: 0.0
     ypinp: 0.0
     alpinp: 0.0
@@ -57,7 +57,7 @@ cgrid_curvilinear:
 
 inpgrid_curvilinear:
   - model_type: curvilinear
-    inpgrid: bottom
+    grid_type: bottom
     mxinp: 10
     myinp: 10
     excval: -999.0
