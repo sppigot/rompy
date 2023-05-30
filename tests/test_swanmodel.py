@@ -4,7 +4,6 @@ import shutil
 import pytest
 from utils import compare_files
 
-from rompy.core import ModelRun
 from rompy.swan import SwanConfig, SwanGrid, SwanModel
 
 here = os.path.dirname(os.path.abspath(__file__))
@@ -17,7 +16,7 @@ def grid():
 
 @pytest.fixture
 def model():
-    return ModelRun(
+    return SwanModel(
         run_id="test_swan",
         output_dir=os.path.join(here, "simulations"),
     )
@@ -28,14 +27,16 @@ def nesting():
     return SwanModel(
         run_id="test_nesting",
         output_dir=os.path.join(here, "simulations"),
-        config=SwanConfig(subnests=[SwanConfig(), SwanConfig(subnests=[SwanConfig()])]),
+        config=SwanConfig(
+            subnests=[SwanConfig(), SwanConfig(subnests=[SwanConfig()])]),
     )
 
 
 @pytest.mark.skip(reason="Overlap here with swan temlate tests - need to consolidate")
 def test_generate(model):
     model.config.write(
-        ModelRun(run_id="test_swan", output_dir=os.path.join(here, "simulations"))
+        SwanModel(run_id="test_swan",
+                  output_dir=os.path.join(here, "simulations"))
     )
     compare_files(
         os.path.join(here, "simulations/test_swan/INPUT"),
@@ -45,10 +46,10 @@ def test_generate(model):
 
 
 def test_swan_input(grid):
-    model = ModelRun(
+    model = SwanModel(
         run_id="test_swan",
         output_dir="simulations",
-        config=SwanConfig(grid=grid, physics=dict(friction="MAD"), model_type="swan"),
+        config=dict(grid=grid, physics=dict(friction="MAD")),
     )
     assert model.config.physics.friction == "MAD"
 
@@ -58,7 +59,7 @@ def test_failing_friction():
         model = SwanModel(
             run_id="test_swan",
             output_dir="simulations",
-            config=SwanConfig(friction="BAD"),
+            config=dict(friction="BAD", model_type="swan"),
         )
 
 

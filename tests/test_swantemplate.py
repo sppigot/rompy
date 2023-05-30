@@ -97,7 +97,6 @@ def nc_data_source():
 @pytest.fixture
 def config(grid, nc_data_source, nc_bathy):
     """Create a SwanConfig object."""
-    # return SwanConfig(forcing={"wind": nc_data_source, "bottom": nc_bathy})
     return SwanConfig(
         grid=grid,
         forcing={"bottom": nc_bathy, "wind": nc_data_source},
@@ -106,13 +105,12 @@ def config(grid, nc_data_source, nc_bathy):
 
 def test_swantemplate(config):
     """Test the swantemplate function."""
-    time = TimeRange(start=datetime(2020, 2, 21, 4),
-                     end=datetime(2020, 2, 24, 4))
+    time = TimeRange(start=datetime(2020, 2, 21, 4), end=datetime(2020, 2, 24, 4))
     runtime = ModelRun(
+        model_type="swan",
         run_id="test_swantemplate",
         output_dir=os.path.join(here, "simulations"),
         config=config,
-        template=os.path.join(here, "../rompy/templates/swan"),
     )
     runtime.generate()
     compare_files(
