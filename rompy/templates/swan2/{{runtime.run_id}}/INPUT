@@ -7,3 +7,6 @@
 {% for inpgrid in config.inpgrid %}
 {{inpgrid.render()}}
 {% endfor %}
+
+!------------------------------------------------------------- Boundary -----------------------------------------------------------
+{{config.boundary.render()}}
