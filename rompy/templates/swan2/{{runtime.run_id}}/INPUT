@@ -6,6 +6,8 @@
 
 {{config.mode.render()}}
 
+{{config.coordinates.render()}}
+
 !------------------------------------------------------- Computational Grid -------------------------------------------------------
 
 {{config.cgrid.render()}}
