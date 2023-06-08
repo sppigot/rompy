@@ -1,0 +1,25 @@
+!------------------------------------------------------- Rompy SWAN Config --------------------------------------------------------
+
+{{config.project.render()}}
+
+{{config.set.render()}}
+
+{{config.mode.render()}}
+
+{{config.coordinates.render()}}
+
+!------------------------------------------------------- Computational Grid -------------------------------------------------------
+
+{{config.cgrid.render()}}
+
+
+!----------------------------------------------------------- Input Grids ----------------------------------------------------------
+{% for inpgrid in config.inpgrid %}
+{{inpgrid.render()}}
+{% endfor %}
+
+!------------------------------------------------- Boundary and Initial conditions ------------------------------------------------
+
+{{config.boundary.render()}}
+
+{{config.initial.render()}}
