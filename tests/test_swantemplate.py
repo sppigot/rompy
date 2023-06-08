@@ -2,6 +2,7 @@ import os
 import shutil
 import tempfile
 from datetime import datetime
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -10,9 +11,10 @@ import xarray as xr
 from utils import compare_files
 
 from rompy.core import ModelRun, TimeRange
-from rompy.swan import SwanConfig, SwanDataGrid, SwanGrid
+from rompy.swan import DataBoundary, SwanConfig, SwanDataGrid, SwanGrid
+from rompy.swan.boundary import DatasetXarray  # This will likely get moved
 
-here = os.path.dirname(os.path.abspath(__file__))
+HERE = Path(__file__).parent
 
 
 @pytest.fixture
@@ -48,6 +50,25 @@ def nc_bathy():
     return SwanDataGrid(
         id="bottom", path=source, z1="depth", var="BOTTOM", latname="lat", lonname="lon"
     )
+
+
+@pytest.fixture
+def nc_bnd():
+    bnd = DataBoundary(
+        id="westaus",
+        dataset=DatasetXarray(
+            uri=HERE / "data/aus-20230101.nc",
+            engine="netcdf4",
+        ),
+        sel_method="idw",
+        tolerance=2.0,
+        rectangle="closed",
+    )
+    dataset = DatasetXarray(
+        uri=HERE / "swan/data/aus-20230101.nc",
+        engine="netcdf4",
+    )
+    return bnd
 
 
 @pytest.fixture
@@ -95,26 +116,28 @@ def nc_data_source():
 
 
 @pytest.fixture
-def config(grid, nc_data_source, nc_bathy):
+def config(grid, nc_data_source, nc_bathy, nc_bnd):
     """Create a SwanConfig object."""
     return SwanConfig(
         grid=grid,
-        forcing={"bottom": nc_bathy, "wind": nc_data_source},
+        forcing={"bottom": nc_bathy,
+                 "wind": nc_data_source, "boundary": nc_bnd},
     )
 
 
 def test_swantemplate(config):
     """Test the swantemplate function."""
-    time = TimeRange(start=datetime(2020, 2, 21, 4), end=datetime(2020, 2, 24, 4))
+    time = TimeRange(start=datetime(2020, 2, 21, 4),
+                     end=datetime(2020, 2, 24, 4))
     runtime = ModelRun(
         model_type="swan",
         run_id="test_swantemplate",
-        output_dir=os.path.join(here, "simulations"),
+        output_dir=os.path.join(HERE, "simulations"),
         config=config,
     )
     runtime.generate()
     compare_files(
-        os.path.join(here, "simulations/test_swan_ref/INPUT_NEW"),
-        os.path.join(here, "simulations/test_swantemplate/INPUT"),
+        os.path.join(HERE, "simulations/test_swan_ref/INPUT_NEW"),
+        os.path.join(HERE, "simulations/test_swantemplate/INPUT"),
     )
     shutil.rmtree(os.path.join(here, "simulations/test_swantemplate"))
