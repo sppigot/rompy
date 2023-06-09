@@ -133,10 +133,10 @@ class NetCDFFCStackSource(DataSourceMixin):
         import xarray as xr
         from dask import delayed, compute
         import dask.config as dc
-        from .filters import _open_preprocess
+        from .core.filters import _open_preprocess
 
         # Ensure a time normalisation filter is applied to each dataset
-        from .filters import timenorm_filter
+        from .core.filters import timenorm_filter
         if ('timenorm' not in self.ds_filters.keys()) and (timenorm_filter not in self.ds_filters.keys()):
             self.ds_filters[timenorm_filter]={'interval':'hour'}
 
@@ -283,10 +283,10 @@ class NetCDFAODNStackSource(DataSourceMixin):
         import xarray as xr
         from dask import delayed, compute
         import dask.config as dc
-        from .filters import _open_preprocess
+        from .core.filters import _open_preprocess
 
         # Ensure a time and spatial filter is applied to each dataset
-        from .filters import crop_filter
+        from .core.filters import crop_filter
         if ('crop' not in self.ds_filters.keys()) and (crop_filter not in self.ds_filters.keys()):
             import shapely.wkt
             lon, lat = shapely.wkt.loads(self.geom).exterior.coords.xy
