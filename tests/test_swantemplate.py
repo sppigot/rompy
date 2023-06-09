@@ -70,7 +70,7 @@ def nc_bnd(tmpdir, time):
     dset_out.to_netcdf(fname)
 
     bnd = DataBoundary(
-        id="westaus",
+        id="boundary",
         dataset=DatasetXarray(
             uri=fname,
             engine="netcdf4",
@@ -131,8 +131,7 @@ def config(grid, nc_data_source, nc_bathy, nc_bnd):
     """Create a SwanConfig object."""
     return SwanConfig(
         grid=grid,
-        forcing={"bottom": nc_bathy,
-                 "wind": nc_data_source, "boundary": nc_bnd},
+        forcing={"bottom": nc_bathy, "wind": nc_data_source, "boundary": nc_bnd},
     )
 
 
