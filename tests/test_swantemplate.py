@@ -65,8 +65,8 @@ def nc_bnd(tmpdir, time):
     dset_in = xr.open_dataset(HERE / "data/aus-20230101.nc")
     dset_out = xr.concat(len(time.date_range) * [dset_in.isel(time=[0])], dim="time")
     dset_out = dset_out.assign_coords({"time": time.date_range})
-    dset_out["lon"] = dset_out.lon.isel(site=0, drop=True)
-    dset_out["lat"] = dset_out.lat.isel(site=0, drop=True)
+    dset_out["lon"] = dset_out.lon.isel(time=0, drop=True)
+    dset_out["lat"] = dset_out.lat.isel(time=0, drop=True)
     dset_out.to_netcdf(fname)
 
     bnd = DataBoundary(
