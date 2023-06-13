@@ -13,7 +13,9 @@ here = os.path.dirname(os.path.abspath(__file__))
 
 def test_swanbasic():
     """Test the swantemplate function."""
-    time = TimeRange(start=datetime(2020, 2, 21, 4), end=datetime(2020, 2, 24, 4))
+    time = TimeRange(
+        start=datetime(2020, 2, 21, 4), end=datetime(2020, 2, 24, 4), interval="15M"
+    )
     runtime = ModelRun(
         run_id="test_swantemplatebasic",
         output_dir=os.path.join(here, "simulations"),

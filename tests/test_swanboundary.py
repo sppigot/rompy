@@ -18,7 +18,7 @@ def time():
 
 @pytest.fixture(scope="module")
 def grid():
-    yield SwanGrid(x0=110, y0=-30, dx=0.5, dy=0.5, nx=10, ny=10)
+    yield SwanGrid(x0=110, y0=-30, dx=0.5, dy=0.5, nx=10, ny=10, rot=77)
 
 
 def test_dataset_wavespectra(tmpdir):
@@ -48,7 +48,7 @@ def test_dataset_intake():
     assert hasattr(dataset.open(), "spec")
 
 
-def test_data_boundary(tmpdir, time, grid):
+def test_data_boundary_spacing_from_dataset(tmpdir, time, grid):
     bnd = DataBoundary(
         id="westaus",
         dataset=DatasetXarray(
@@ -59,10 +59,47 @@ def test_data_boundary(tmpdir, time, grid):
         tolerance=2.0,
         rectangle="closed",
     )
-    bnd._filter_grid(grid=grid)
     bnd._filter_time(time=time)
-    bnd.get(stage_dir=tmpdir)
+    bnd.get(stage_dir=tmpdir, grid=grid)
     ds = read_swan(tmpdir / "westaus.bnd")
-    xbnd, ybnd = bnd._boundary_points(bnd.grid)
-    assert set(xbnd - ds.lon.values) == {0}
-    assert set(ybnd - ds.lat.values) == {0}
+    xbnd, ybnd = bnd._boundary_points(grid)
+    assert xbnd == pytest.approx(ds.lon.values)
+    assert ybnd == pytest.approx(ds.lat.values)
+
+
+def test_data_boundary_custom_spacing(tmpdir, time, grid):
+    bnd = DataBoundary(
+        id="westaus",
+        dataset=DatasetXarray(
+            uri=HERE / "data/aus-20230101.nc",
+            engine="netcdf4",
+        ),
+        spacing=1,
+        sel_method="idw",
+        tolerance=2.0,
+        rectangle="closed",
+    )
+    bnd._filter_time(time=time)
+    bnd.get(stage_dir=tmpdir, grid=grid)
+    ds = read_swan(tmpdir / "westaus.bnd")
+    xbnd, ybnd = bnd._boundary_points(grid)
+    assert xbnd == pytest.approx(ds.lon.values)
+    assert ybnd == pytest.approx(ds.lat.values)
+
+
+def test_data_boundary_spacing_lt_perimeter(tmpdir, time, grid):
+    with pytest.raises(ValueError):
+        bnd = DataBoundary(
+            id="westaus",
+            dataset=DatasetXarray(
+                uri=HERE / "data/aus-20230101.nc",
+                engine="netcdf4",
+            ),
+            spacing=100,
+            sel_method="idw",
+            tolerance=2.0,
+            rectangle="closed",
+        )
+        bnd._filter_time(time=time)
+        bnd.get(stage_dir=tmpdir, grid=grid)
+
