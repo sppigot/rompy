@@ -9,6 +9,7 @@ period:
   interval: 1h
 output_dir: simulations
 config:
+  model_type: swan
   grid:
     x0: 115.68
     y0: -32.76
