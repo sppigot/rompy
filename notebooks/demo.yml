@@ -25,9 +25,12 @@ config:
     ndirs: 36
   forcing:
     wind:
+      model_type: swan
       id: wind 
       var: WIND 
-      path: simulations/test_swantemplate/datasets/wind_inputs.nc
+      dataset: 
+        uri: simulations/test_swantemplate/datasets/wind_inputs.nc
+        model_type: xarray
       z1: u
       z2: v
       latname: lat
@@ -35,7 +38,9 @@ config:
     bottom: 
       id: bottom
       var: BOTTOM
-      path: simulations/test_swantemplate/datasets/bathy.nc
+      dataset: 
+        uri: simulations/test_swantemplate/datasets/bathy.nc
+        model_type: xarray
       z1: depth
       latname: lat
       lonname: lon
