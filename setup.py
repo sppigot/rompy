@@ -42,7 +42,7 @@ setup(
     packages=find_packages(),
     entry_points={
         "console_scripts": [
-            "swan=rompy.cli:main",
+            "rompy=rompy.cli:main",
         ],
         "intake.drivers": ["netcdf_fcstack = rompy.intake:NetCDFFCStackSource"],
         "intake.catalogs": ["rompy_data = rompy:cat"],
