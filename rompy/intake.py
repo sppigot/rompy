@@ -175,7 +175,7 @@ class NetCDFFCStackSource(DataSourceMixin):
             max_init_time = ds['init'].groupby('time').max()
             min_lead_time = ds['lead'].groupby('time').min()
             ds = ds.sel(forecast_time=list(zip(max_init_time.values, min_lead_time.values)))
-            ds = ds.reset_index('forecast_time').rename({'forecast_time':'time'})
+            ds = ds.reset_index('forecast_time').swap_dims({'forecast_time':'time'})
 
             # Finally return the composed dataset, cropped back to cover the requested time period
             if self.startdt is not None:
