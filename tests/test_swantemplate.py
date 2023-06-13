@@ -25,7 +25,9 @@ def grid():
 @pytest.fixture
 def time():
     # yield TimeRange(start="2000-01-01T00", end="2000-01-10T12", interval="1d")
-    yield TimeRange(start=datetime(2020, 2, 21, 4), end=datetime(2020, 2, 24, 4))
+    yield TimeRange(
+        start=datetime(2020, 2, 21, 4), end=datetime(2020, 2, 24, 4), interval="15M"
+    )
 
 
 @pytest.fixture
@@ -68,8 +70,7 @@ def nc_bnd(tmpdir, time):
     # Dummy dataset to cover the same time range
     fname = tmpdir / "aus-boundary.nc"
     dset_in = xr.open_dataset(HERE / "data/aus-20230101.nc")
-    dset_out = xr.concat(len(time.date_range) *
-                         [dset_in.isel(time=[0])], dim="time")
+    dset_out = xr.concat(len(time.date_range) * [dset_in.isel(time=[0])], dim="time")
     dset_out = dset_out.assign_coords({"time": time.date_range})
     dset_out["lon"] = dset_out.lon.isel(time=0, drop=True)
     dset_out["lat"] = dset_out.lat.isel(time=0, drop=True)
@@ -139,8 +140,7 @@ def config(grid, nc_data_source, nc_bathy, nc_bnd):
     """Create a SwanConfig object."""
     return SwanConfig(
         grid=grid,
-        forcing={"bottom": nc_bathy,
-                 "wind": nc_data_source, "boundary": nc_bnd},
+        forcing={"bottom": nc_bathy, "wind": nc_data_source, "boundary": nc_bnd},
     )
 
 
