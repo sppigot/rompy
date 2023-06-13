@@ -1,11 +1,8 @@
 !------------------------------------------------------- Rompy SWAN Config --------------------------------------------------------
 
 {{config.project.render()}}
-
 {{config.set.render()}}
-
 {{config.mode.render()}}
-
 {{config.coordinates.render()}}
 
 
