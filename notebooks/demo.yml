@@ -3,12 +3,13 @@
 
 run_id: test_swantemplate 
 period:
-  start: 20200221T04
+  start: 20230101T00
   # end: 20200224T04
   duration: 3d
   interval: 1h
 output_dir: simulations
 config:
+  model_type: swan
   grid:
     x0: 115.68
     y0: -32.76
@@ -25,9 +26,12 @@ config:
     ndirs: 36
   forcing:
     wind:
+      model_type: swan
       id: wind 
       var: WIND 
-      path: simulations/test_swantemplate/datasets/wind_inputs.nc
+      dataset: 
+        uri: simulations/test_swantemplate/datasets/wind_inputs.nc
+        model_type: xarray
       z1: u
       z2: v
       latname: lat
@@ -35,10 +39,21 @@ config:
     bottom: 
       id: bottom
       var: BOTTOM
-      path: simulations/test_swantemplate/datasets/bathy.nc
+      dataset: 
+        uri: simulations/test_swantemplate/datasets/bathy.nc
+        model_type: xarray
       z1: depth
       latname: lat
       lonname: lon
+    boundary:
+      id: bnd
+      dataset: 
+        uri: ../tests/data/aus-20230101.nc
+        model_type: xarray
+      latname: lat
+      lonname: lon
+      tolerance: 0.1
+      sel_method: idw
   physics': 
     friction: MAD
     friction_coeff: 0.1
@@ -59,5 +74,4 @@ config:
         y: -32.76
       - x: 115.68
         y: -32.76
-template': /source/rompy/templates/swanbasic
 
