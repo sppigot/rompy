@@ -12,9 +12,9 @@
 
 
 !----------------------------------------------------------- Input Grids ----------------------------------------------------------
-{% if config.inpgrid %}{% for inpgrid in config.inpgrid %}
-{{inpgrid.render()}}
-{% endfor %}{% endif %}
+
+{% if config.inpgrid %}{{config.inpgrid.render()}}{% endif %}
+
 
 !------------------------------------------------- Boundary and Initial conditions ------------------------------------------------
 
