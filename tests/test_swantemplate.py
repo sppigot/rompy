@@ -2,6 +2,7 @@ import os
 import shutil
 import tempfile
 from datetime import datetime
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -9,15 +10,24 @@ import pytest
 import xarray as xr
 from utils import compare_files
 
-from rompy.core import ModelRun, TimeRange
-from rompy.swan import SwanConfig, SwanDataGrid, SwanGrid
+from rompy.core import DatasetXarray, ModelRun, TimeRange
+from rompy.swan import DataBoundary, SwanConfig, SwanDataGrid, SwanGrid
+from rompy.swan.boundary import DatasetXarray  # This will likely get moved
 
-here = os.path.dirname(os.path.abspath(__file__))
+HERE = Path(__file__).parent
 
 
 @pytest.fixture
 def grid():
     return SwanGrid(x0=115.68, y0=-32.76, dx=0.001, dy=0.001, nx=390, ny=150, rot=77)
+
+
+@pytest.fixture
+def time():
+    # yield TimeRange(start="2000-01-01T00", end="2000-01-10T12", interval="1d")
+    yield TimeRange(
+        start=datetime(2020, 2, 21, 4), end=datetime(2020, 2, 24, 4), interval="15M"
+    )
 
 
 @pytest.fixture
@@ -46,19 +56,47 @@ def nc_bathy():
     )
     ds.to_netcdf(source)
     return SwanDataGrid(
-        id="bottom", path=source, z1="depth", var="BOTTOM", latname="lat", lonname="lon"
+        id="bottom",
+        dataset=DatasetXarray(uri=source),
+        z1="depth",
+        var="BOTTOM",
+        latname="lat",
+        lonname="lon",
     )
 
 
 @pytest.fixture
-def nc_data_source():
+def nc_bnd(tmpdir, time):
+    # Dummy dataset to cover the same time range
+    fname = tmpdir / "aus-boundary.nc"
+    dset_in = xr.open_dataset(HERE / "data/aus-20230101.nc")
+    dset_out = xr.concat(len(time.date_range) * [dset_in.isel(time=[0])], dim="time")
+    dset_out = dset_out.assign_coords({"time": time.date_range})
+    dset_out["lon"] = dset_out.lon.isel(time=0, drop=True)
+    dset_out["lat"] = dset_out.lat.isel(time=0, drop=True)
+    dset_out.to_netcdf(fname)
+
+    bnd = DataBoundary(
+        id="boundary",
+        dataset=DatasetXarray(
+            uri=fname,
+            engine="netcdf4",
+        ),
+        sel_method="idw",
+        tolerance=2.0,
+        rectangle="closed",
+    )
+    return bnd
+
+
+@pytest.fixture
+def nc_data_source(tmpdir, time):
     # touch temp netcdf file
     # setup to replicate what was already there in the model templates
     wind_grid = SwanGrid(
         x0=115.68, y0=-32.76, rot=77, nx=391, ny=151, dx=0.001, dy=0.001, exc=-99.0
     )
-    tmp_path = tempfile.mkdtemp()
-    source = os.path.join(tmp_path, "wind_input.nc")
+    source = os.path.join(tmpdir, "wind_input.nc")
 
     # calculate lat/lon manually due to rounding errors in arange
     lat = []
@@ -68,22 +106,23 @@ def nc_data_source():
     for nn in range(wind_grid.nx):
         lon.append(wind_grid.x0 + (nn * wind_grid.dx))
 
+    nt = len(time.date_range)
     ds = xr.Dataset(
         {
             "u": xr.DataArray(
-                np.random.rand(10, wind_grid.ny, wind_grid.nx),
+                np.random.rand(nt, wind_grid.ny, wind_grid.nx),
                 dims=["time", "latitude", "longitude"],
                 coords={
-                    "time": pd.date_range("2000-01-01", periods=10),
+                    "time": time.date_range,
                     "latitude": lat,
                     "longitude": lon,
                 },
             ),
             "v": xr.DataArray(
-                np.random.rand(10, wind_grid.ny, wind_grid.nx),
+                np.random.rand(nt, wind_grid.ny, wind_grid.nx),
                 dims=["time", "latitude", "longitude"],
                 coords={
-                    "time": pd.date_range("2020-02-21", periods=10),
+                    "time": time.date_range,
                     "latitude": lat,
                     "longitude": lon,
                 },
@@ -91,30 +130,31 @@ def nc_data_source():
         }
     )
     ds.to_netcdf(source)
-    return SwanDataGrid(id="wind", var="WIND", path=source, z1="u", z2="v")
-
-
-@pytest.fixture
-def config(grid, nc_data_source, nc_bathy):
-    """Create a SwanConfig object."""
-    return SwanConfig(
-        grid=grid,
-        forcing={"bottom": nc_bathy, "wind": nc_data_source},
+    return SwanDataGrid(
+        id="wind", var="WIND", dataset=DatasetXarray(uri=source), z1="u", z2="v"
     )
 
 
-def test_swantemplate(config):
+@pytest.fixture
+def config(grid, nc_data_source, nc_bathy, nc_bnd):
+    """Create a SwanConfig object."""
+    return SwanConfig(
+        grid=grid,
+        forcing={"bottom": nc_bathy, "wind": nc_data_source, "boundary": nc_bnd},
+    )
+
+
+def test_swantemplate(config, time):
     """Test the swantemplate function."""
-    time = TimeRange(start=datetime(2020, 2, 21, 4), end=datetime(2020, 2, 24, 4))
     runtime = ModelRun(
         model_type="swan",
         run_id="test_swantemplate",
-        output_dir=os.path.join(here, "simulations"),
+        output_dir=os.path.join(HERE, "simulations"),
         config=config,
     )
     runtime.generate()
     compare_files(
-        os.path.join(here, "simulations/test_swan_ref/INPUT_NEW"),
-        os.path.join(here, "simulations/test_swantemplate/INPUT"),
+        os.path.join(HERE, "simulations/test_swan_ref/INPUT_NEW"),
+        os.path.join(HERE, "simulations/test_swantemplate/INPUT"),
     )
-    shutil.rmtree(os.path.join(here, "simulations/test_swantemplate"))
+    shutil.rmtree(os.path.join(HERE, "simulations/test_swantemplate"))

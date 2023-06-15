@@ -6,6 +6,7 @@ import pandas as pd
 import pytest
 import xarray as xr
 
+from rompy.core import DatasetXarray
 from rompy.swan.config import SwanConfig
 from rompy.swan.data import Swan_accessor, SwanDataGrid
 from rompy.swan.grid import SwanGrid
@@ -30,7 +31,12 @@ def nc_bathy():
     )
     ds.to_netcdf(source)
     return SwanDataGrid(
-        id="bottom", path=source, z1="depth", var="BOTTOM", latname="lat", lonname="lon"
+        id="bottom",
+        dataset=DatasetXarray(uri=source),
+        z1="depth",
+        var="BOTTOM",
+        latname="lat",
+        lonname="lon",
     )
 
 
@@ -62,7 +68,13 @@ def nc_data_source():
         }
     )
     ds.to_netcdf(source)
-    return SwanDataGrid(id="wind", path=source, z1="u10", z2="v10", variable="WIND")
+    return SwanDataGrid(
+        id="wind",
+        dataset=DatasetXarray(uri=source),
+        z1="u10",
+        z2="v10",
+        variable="WIND",
+    )
 
 
 def test_swandata_write(nc_data_source):
