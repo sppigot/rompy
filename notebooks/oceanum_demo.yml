@@ -35,7 +35,6 @@ config:
         model_type: intake
         catalog_uri: ../rompy/catalogs/oceanum.yaml
         dataset_id: era5_wind10m
-      fac: -1.0
       filter:
         sort: 
           coords: [latitude]
@@ -50,6 +49,7 @@ config:
         model_type: intake
         catalog_uri: ../rompy/catalogs/oceanum.yaml
         dataset_id: gebco_2022
+      fac: -1.0
       z1: elevation
       latname: lat
       lonname: lon
