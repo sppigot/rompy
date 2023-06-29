@@ -26,7 +26,7 @@ def test_dataset_wavespectra(tmpdir):
     outfile = tmpdir / "aus-20230101.swn"
     dset.spec.to_swan(outfile)
     dataset = DatasetWavespectra(
-        uri=outfile,
+        dataset=outfile,
         reader="read_swan",
     )
     assert hasattr(dataset.open(), "spec")
@@ -34,7 +34,7 @@ def test_dataset_wavespectra(tmpdir):
 
 def test_dataset_xarray():
     dataset = DatasetXarray(
-        uri=HERE / "data/aus-20230101.nc",
+        dataset=HERE / "data/aus-20230101.nc",
         engine="netcdf4",
     )
     assert hasattr(dataset.open(), "spec")
@@ -42,7 +42,7 @@ def test_dataset_xarray():
 
 def test_dataset_intake():
     dataset = DatasetIntake(
-        dataset_id="ausspec",
+        dataset="ausspec",
         catalog_uri=HERE / "data/catalog.yaml",
     )
     assert hasattr(dataset.open(), "spec")
@@ -52,7 +52,7 @@ def test_data_boundary_spacing_from_dataset(tmpdir, time, grid):
     bnd = DataBoundary(
         id="westaus",
         dataset=DatasetXarray(
-            uri=HERE / "data/aus-20230101.nc",
+            dataset=HERE / "data/aus-20230101.nc",
             engine="netcdf4",
         ),
         sel_method="idw",
@@ -71,7 +71,7 @@ def test_data_boundary_custom_spacing(tmpdir, time, grid):
     bnd = DataBoundary(
         id="westaus",
         dataset=DatasetXarray(
-            uri=HERE / "data/aus-20230101.nc",
+            dataset=HERE / "data/aus-20230101.nc",
             engine="netcdf4",
         ),
         spacing=1,
@@ -92,7 +92,7 @@ def test_data_boundary_spacing_lt_perimeter(tmpdir, time, grid):
         bnd = DataBoundary(
             id="westaus",
             dataset=DatasetXarray(
-                uri=HERE / "data/aus-20230101.nc",
+                dataset=HERE / "data/aus-20230101.nc",
                 engine="netcdf4",
             ),
             spacing=100,
