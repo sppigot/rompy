@@ -7,16 +7,15 @@ import pytest
 import xarray as xr
 
 from rompy.core import DatasetXarray
-from rompy.swan.config import SwanConfig
-from rompy.swan.data import Swan_accessor, SwanDataGrid
+from rompy.core.types import DatasetCoords
+from rompy.swan.data import SwanDataGrid
 from rompy.swan.grid import SwanGrid
 
 
 @pytest.fixture
-def nc_bathy():
+def nc_bathy(tmpdir):
     # touch temp netcdf file
-    tmp_path = tempfile.mkdtemp()
-    source = os.path.join(tmp_path, "bathy.nc")
+    source = os.path.join(tmpdir, "bathy.nc")
     ds = xr.Dataset(
         {
             "depth": xr.DataArray(
@@ -32,19 +31,20 @@ def nc_bathy():
     ds.to_netcdf(source)
     return SwanDataGrid(
         id="bottom",
-        dataset=DatasetXarray(uri=source),
+        dataset=DatasetXarray(dataset=source),
         z1="depth",
         var="BOTTOM",
-        latname="lat",
-        lonname="lon",
+        coords=DatasetCoords(
+            x="lon",
+            y="lat",
+        ),
     )
 
 
 @pytest.fixture
-def nc_data_source():
+def nc_data_source(tmpdir):
     # touch temp netcdf file
-    tmp_path = tempfile.mkdtemp()
-    source = os.path.join(tmp_path, "test.nc")
+    source = os.path.join(tmpdir, "test.nc")
     ds = xr.Dataset(
         {
             "u10": xr.DataArray(
@@ -70,24 +70,22 @@ def nc_data_source():
     ds.to_netcdf(source)
     return SwanDataGrid(
         id="wind",
-        dataset=DatasetXarray(uri=source),
+        dataset=DatasetXarray(dataset=source),
         z1="u10",
         z2="v10",
         variable="WIND",
     )
 
 
-def test_swandata_write(nc_data_source):
-    staging_dir = tempfile.mkdtemp()
+def test_swandata_write(tmpdir, nc_data_source):
     swangrid = SwanGrid(x0=0, y0=0, dx=1, dy=1, nx=10, ny=10)
     config_ref = (
         "INPGRID WIND REG 0.0 0.0 0.0 9 9 1.0 1.0 EXC -99.0 NONSTATION 20000101.000000 24.0 HR\n"
     )
     config_ref += "READINP WIND 1.0 'wind.grd' 3 0 1 0 FREE\n"
-    config = nc_data_source.get(staging_dir, swangrid)
+    config = nc_data_source.get(tmpdir, swangrid)
     assert config == config_ref
 
 
-def test_bathy_write(nc_bathy):
-    staging_dir = tempfile.mkdtemp()
-    config = nc_bathy.get(staging_dir)
+def test_bathy_write(tmpdir, nc_bathy):
+    config = nc_bathy.get(tmpdir)
