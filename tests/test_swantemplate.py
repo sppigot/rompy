@@ -1,20 +1,18 @@
 import os
 import shutil
-import tempfile
 from datetime import datetime
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 import pytest
 import xarray as xr
 from utils import compare_files
 
 from rompy import ModelRun
-from rompy.core import DatasetXarray, TimeRange
+from rompy.core.data import SourceOpenDataset
+from rompy.core import TimeRange
 from rompy.core.types import DatasetCoords
 from rompy.swan import DataBoundary, SwanConfig, SwanDataGrid, SwanGrid
-from rompy.swan.boundary import DatasetXarray  # This will likely get moved
 
 HERE = Path(__file__).parent
 
@@ -33,13 +31,12 @@ def time():
 
 
 @pytest.fixture
-def nc_bathy():
+def nc_bathy(tmpdir):
     # touch temp netcdf file
     bottom = SwanGrid(
         x0=115.68, y0=-32.76, rot=77, nx=391, ny=151, dx=0.001, dy=0.001, exc=-99.0
     )
-    tmp_path = tempfile.mkdtemp()
-    source = os.path.join(tmp_path, "bathy.nc")
+    source = os.path.join(tmpdir, "bathy.nc")
     # calculate lat/lon manually due to rounding errors in arange
     lat = []
     for nn in range(bottom.ny):
@@ -59,7 +56,7 @@ def nc_bathy():
     ds.to_netcdf(source)
     return SwanDataGrid(
         id="bottom",
-        dataset=DatasetXarray(dataset=source),
+        source=SourceOpenDataset(uri=source),
         z1="depth",
         var="BOTTOM",
         coords=DatasetCoords(
@@ -82,9 +79,9 @@ def nc_bnd(tmpdir, time):
 
     bnd = DataBoundary(
         id="boundary",
-        dataset=DatasetXarray(
-            dataset=fname,
-            engine="netcdf4",
+        source=SourceOpenDataset(
+            uri=fname,
+            kwargs=dict(engine="netcdf4"),
         ),
         sel_method="idw",
         tolerance=2.0,
@@ -135,7 +132,7 @@ def nc_data_source(tmpdir, time):
     )
     ds.to_netcdf(source)
     return SwanDataGrid(
-        id="wind", var="WIND", dataset=DatasetXarray(dataset=source), z1="u", z2="v"
+        id="wind", var="WIND", source=SourceOpenDataset(uri=source), z1="u", z2="v"
     )
 
 
