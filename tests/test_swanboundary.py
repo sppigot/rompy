@@ -5,7 +5,7 @@ from wavespectra import read_swan
 
 from rompy.core.time import TimeRange
 from rompy.swan.grid import SwanGrid
-from rompy.swan.boundary import DatasetIntake, DatasetXarray, DatasetWavespectra, DataBoundary
+from rompy.swan.boundary import SourceOpenDataset, SourceIntake, SourceWavespectra, DataBoundary
 
 
 HERE = Path(__file__).parent
@@ -21,28 +21,28 @@ def grid():
     yield SwanGrid(x0=110, y0=-30, dx=0.5, dy=0.5, nx=10, ny=10, rot=77)
 
 
-def test_dataset_wavespectra(tmpdir):
+def test_source_wavespectra(tmpdir):
     dset = xr.open_dataset(HERE / "data/aus-20230101.nc")
     outfile = tmpdir / "aus-20230101.swn"
     dset.spec.to_swan(outfile)
-    dataset = DatasetWavespectra(
-        dataset=outfile,
+    dataset = SourceWavespectra(
+        uri=outfile,
         reader="read_swan",
     )
     assert hasattr(dataset.open(), "spec")
 
 
-def test_dataset_xarray():
-    dataset = DatasetXarray(
-        dataset=HERE / "data/aus-20230101.nc",
-        engine="netcdf4",
+def test_source_netcdf_formatted_with_wavespectra_conventions():
+    dataset = SourceOpenDataset(
+        uri=HERE / "data/aus-20230101.nc",
+        kwargs=dict(engine="netcdf4"),
     )
     assert hasattr(dataset.open(), "spec")
 
 
-def test_dataset_intake():
-    dataset = DatasetIntake(
-        dataset="ausspec",
+def test_source_intake():
+    dataset = SourceIntake(
+        dataset_id="ausspec",
         catalog_uri=HERE / "data/catalog.yaml",
     )
     assert hasattr(dataset.open(), "spec")
@@ -51,9 +51,9 @@ def test_dataset_intake():
 def test_data_boundary_spacing_from_dataset(tmpdir, time, grid):
     bnd = DataBoundary(
         id="westaus",
-        dataset=DatasetXarray(
-            dataset=HERE / "data/aus-20230101.nc",
-            engine="netcdf4",
+        source=SourceOpenDataset(
+            uri=HERE / "data/aus-20230101.nc",
+            kwargs=dict(engine="netcdf4"),
         ),
         sel_method="idw",
         tolerance=2.0,
@@ -70,9 +70,9 @@ def test_data_boundary_spacing_from_dataset(tmpdir, time, grid):
 def test_data_boundary_custom_spacing(tmpdir, time, grid):
     bnd = DataBoundary(
         id="westaus",
-        dataset=DatasetXarray(
-            dataset=HERE / "data/aus-20230101.nc",
-            engine="netcdf4",
+        source=SourceOpenDataset(
+            uri=HERE / "data/aus-20230101.nc",
+            kwargs=dict(engine="netcdf4"),
         ),
         spacing=1,
         sel_method="idw",
@@ -91,9 +91,9 @@ def test_data_boundary_spacing_lt_perimeter(tmpdir, time, grid):
     with pytest.raises(ValueError):
         bnd = DataBoundary(
             id="westaus",
-            dataset=DatasetXarray(
-                dataset=HERE / "data/aus-20230101.nc",
-                engine="netcdf4",
+            source=SourceOpenDataset(
+                uri=HERE / "data/aus-20230101.nc",
+                kwargs=dict(engine="netcdf4"),
             ),
             spacing=100,
             sel_method="idw",
