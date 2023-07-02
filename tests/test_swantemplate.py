@@ -9,7 +9,7 @@ import xarray as xr
 from utils import compare_files
 
 from rompy import ModelRun
-from rompy.core.data import SourceOpenDataset
+from rompy.core.data import SourceFile
 from rompy.core import TimeRange
 from rompy.core.types import DatasetCoords
 from rompy.swan import DataBoundary, SwanConfig, SwanDataGrid, SwanGrid
@@ -56,7 +56,7 @@ def nc_bathy(tmpdir):
     ds.to_netcdf(source)
     return SwanDataGrid(
         id="bottom",
-        source=SourceOpenDataset(uri=source),
+        source=SourceFile(uri=source),
         z1="depth",
         var="BOTTOM",
         coords=DatasetCoords(
@@ -79,7 +79,7 @@ def nc_bnd(tmpdir, time):
 
     bnd = DataBoundary(
         id="boundary",
-        source=SourceOpenDataset(
+        source=SourceFile(
             uri=fname,
             kwargs=dict(engine="netcdf4"),
         ),
@@ -132,7 +132,7 @@ def nc_data_source(tmpdir, time):
     )
     ds.to_netcdf(source)
     return SwanDataGrid(
-        id="wind", var="WIND", source=SourceOpenDataset(uri=source), z1="u", z2="v"
+        id="wind", var="WIND", source=SourceFile(uri=source), z1="u", z2="v"
     )
 
 
