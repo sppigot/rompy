@@ -1,3 +1,5 @@
+click
+cloudpathlib
 cookiecutter
 dask
 fsspec
@@ -9,15 +11,12 @@ intake-geopandas
 matplotlib
 netcdf4
 numpy
+oceanum
 owslib
 pandas
 pydantic
+pydantic_numpy
 scipy
 tqdm
 xarray
-pydantic
-pydantic_numpy
-pathlib
-cloudpathlib
-Click
 wavespectra
