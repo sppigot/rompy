@@ -1,5 +1,3 @@
-import os
-import shutil
 from datetime import datetime
 from pathlib import Path
 
@@ -8,7 +6,7 @@ import pytest
 import xarray as xr
 from utils import compare_files
 
-from rompy import ModelRun
+from rompy.model import ModelRun
 from rompy.core.data import SourceFile
 from rompy.core import TimeRange
 from rompy.core.types import DatasetCoords
@@ -36,7 +34,7 @@ def nc_bathy(tmpdir):
     bottom = SwanGrid(
         x0=115.68, y0=-32.76, rot=77, nx=391, ny=151, dx=0.001, dy=0.001, exc=-99.0
     )
-    source = os.path.join(tmpdir, "bathy.nc")
+    source = tmpdir / "bathy.nc"
     # calculate lat/lon manually due to rounding errors in arange
     lat = []
     for nn in range(bottom.ny):
@@ -97,7 +95,7 @@ def nc_data_source(tmpdir, time):
     wind_grid = SwanGrid(
         x0=115.68, y0=-32.76, rot=77, nx=391, ny=151, dx=0.001, dy=0.001, exc=-99.0
     )
-    source = os.path.join(tmpdir, "wind_input.nc")
+    source = tmpdir / "wind_input.nc"
 
     # calculate lat/lon manually due to rounding errors in arange
     lat = []
@@ -145,17 +143,16 @@ def config(grid, nc_data_source, nc_bathy, nc_bnd):
     )
 
 
-def test_swantemplate(config, time):
+def test_swantemplate(tmpdir, config):
     """Test the swantemplate function."""
     runtime = ModelRun(
         model_type="swan",
         run_id="test_swantemplate",
-        output_dir=os.path.join(HERE, "simulations"),
+        output_dir=str(tmpdir),
         config=config,
     )
     runtime.generate()
     compare_files(
-        os.path.join(HERE, "simulations/test_swan_ref/INPUT_NEW"),
-        os.path.join(HERE, "simulations/test_swantemplate/INPUT"),
+        HERE / "simulations/test_swan_ref/INPUT_NEW",
+        HERE / runtime.run_id / "INPUT",
     )
-    shutil.rmtree(os.path.join(HERE, "simulations/test_swantemplate"))
