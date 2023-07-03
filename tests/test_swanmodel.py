@@ -47,7 +47,6 @@ def test_generate(tmpdir, model):
         tmpdir / model.run_id / "INPUT",
         here / "simulations/test_swan_ref/INPUT",
     )
-    # shutil.rmtree(os.path.join(here, "simulations/test_swan"))
 
 
 def test_swan_input(tmpdir, grid):
@@ -75,4 +74,3 @@ def test_nesting(nesting):
     #     os.path.join(here, "simulations/test_swan/INPUT"),
     #     os.path.join(here, "simulations/test_swan_ref/INPUT"),
     # )
-    # shutil.rmtree(os.path.join(here, "simulations/test_swan"))
