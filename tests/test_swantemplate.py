@@ -154,5 +154,5 @@ def test_swantemplate(tmpdir, config):
     runtime.generate()
     compare_files(
         HERE / "simulations/test_swan_ref/INPUT_NEW",
-        HERE / runtime.run_id / "INPUT",
+        tmpdir / runtime.run_id / "INPUT",
     )
