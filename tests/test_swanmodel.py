@@ -1,13 +1,11 @@
-import os
-import shutil
-
+from pathlib import Path
 import pytest
 from utils import compare_files
 
-from rompy import ModelRun
+from rompy.model import ModelRun
 from rompy.swan import SwanConfig, SwanGrid
 
-here = os.path.dirname(os.path.abspath(__file__))
+here = Path(__file__).parent
 
 
 @pytest.fixture
@@ -16,50 +14,55 @@ def grid():
 
 
 @pytest.fixture
-def model():
+def model(tmpdir):
     return ModelRun(
         run_id="test_swan",
-        output_dir=os.path.join(here, "simulations"),
+        output_dir=str(tmpdir),
     )
 
 
 @pytest.fixture
-def nesting():
+def nesting(tmpdir):
     return ModelRun(
         run_id="test_nesting",
-        output_dir=os.path.join(here, "simulations"),
+        output_dir=str(tmpdir),
         config=SwanConfig(
-            subnests=[SwanConfig(), SwanConfig(subnests=[SwanConfig()])]),
+            subnests=[
+                SwanConfig(),
+                SwanConfig(subnests=[SwanConfig()]),
+            ]
+        ),
     )
 
 
 @pytest.mark.skip(reason="Overlap here with swan temlate tests - need to consolidate")
-def test_generate(model):
+def test_generate(tmpdir, model):
     model.config.write(
-        ModelRun(run_id="test_swan",
-                 output_dir=os.path.join(here, "simulations"))
+        ModelRun(
+            run_id="test_swan",
+            output_dir=str(tmpdir),
+        )
     )
     compare_files(
-        os.path.join(here, "simulations/test_swan/INPUT"),
-        os.path.join(here, "simulations/test_swan_ref/INPUT"),
+        tmpdir / model.run_id / "INPUT",
+        here / "simulations/test_swan_ref/INPUT",
     )
-    # shutil.rmtree(os.path.join(here, "simulations/test_swan"))
 
 
-def test_swan_input(grid):
+def test_swan_input(tmpdir, grid):
     model = ModelRun(
         run_id="test_swan",
-        output_dir="simulations",
+        output_dir=str(tmpdir),
         config=SwanConfig(grid=grid, physics=dict(friction="MAD")),
     )
     assert model.config.physics.friction == "MAD"
 
 
-def test_failing_friction():
+def test_failing_friction(tmpdir):
     with pytest.raises(ValueError):
         model = ModelRun(
             run_id="test_swan",
-            output_dir="simulations",
+            output_dir=str(tmpdir),
             config=dict(friction="BAD", model_type="swan"),
         )
 
@@ -71,4 +74,3 @@ def test_nesting(nesting):
     #     os.path.join(here, "simulations/test_swan/INPUT"),
     #     os.path.join(here, "simulations/test_swan_ref/INPUT"),
     # )
-    # shutil.rmtree(os.path.join(here, "simulations/test_swan"))

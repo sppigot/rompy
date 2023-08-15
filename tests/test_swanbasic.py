@@ -1,34 +1,30 @@
-import os
-import shutil
+from pathlib import Path
 from datetime import datetime
 
-import pytest
 from utils import compare_files
 
-from rompy import ModelRun
+from rompy.model import ModelRun
 from rompy.core import BaseConfig, TimeRange
-from rompy.swan import SwanConfig, SwanDataGrid, SwanGrid
 
-here = os.path.dirname(os.path.abspath(__file__))
+here = Path(__file__).parent
 
 
-def test_swanbasic():
+def test_swanbasic(tmpdir):
     """Test the swantemplate function."""
     time = TimeRange(
         start=datetime(2020, 2, 21, 4), end=datetime(2020, 2, 24, 4), interval="15M"
     )
     runtime = ModelRun(
         run_id="test_swantemplatebasic",
-        output_dir=os.path.join(here, "simulations"),
+        output_dir=str(tmpdir),
         config=BaseConfig(
             friction_coefficient=0.1,
             model_type="base",
-            template=os.path.join(here, "../rompy/templates/swanbasic"),
+            template=str(here.parent / "rompy/templates/swanbasic"),
         ),
     )
     runtime.generate()
     compare_files(
-        os.path.join(here, "simulations/test_swan_ref/INPUT_NEW"),
-        os.path.join(here, "simulations/test_swantemplatebasic/INPUT"),
+        here / "simulations" / "test_swan_ref" / "INPUT_NEW",
+        tmpdir / runtime.run_id / "INPUT",
     )
-    shutil.rmtree(os.path.join(here, "simulations/test_swantemplatebasic"))
