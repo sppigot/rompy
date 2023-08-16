@@ -1,5 +1,3 @@
-import os
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -14,7 +12,7 @@ from rompy.swan.grid import SwanGrid
 @pytest.fixture
 def nc_bathy(tmpdir):
     # touch temp netcdf file
-    source = os.path.join(tmpdir, "bathy.nc")
+    source = tmpdir / "bathy.nc"
     ds = xr.Dataset(
         {
             "depth": xr.DataArray(
@@ -43,7 +41,7 @@ def nc_bathy(tmpdir):
 @pytest.fixture
 def nc_data_source(tmpdir):
     # touch temp netcdf file
-    source = os.path.join(tmpdir, "test.nc")
+    source = tmpdir / "test.nc"
     ds = xr.Dataset(
         {
             "u10": xr.DataArray(
