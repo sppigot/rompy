@@ -10,9 +10,9 @@ from rompy.swan.grid import SwanGrid
 
 
 @pytest.fixture
-def nc_bathy(tmpdir):
+def nc_bathy(tmp_path):
     # touch temp netcdf file
-    source = tmpdir / "bathy.nc"
+    source = tmp_path / "bathy.nc"
     ds = xr.Dataset(
         {
             "depth": xr.DataArray(
@@ -39,9 +39,9 @@ def nc_bathy(tmpdir):
 
 
 @pytest.fixture
-def nc_data_source(tmpdir):
+def nc_data_source(tmp_path):
     # touch temp netcdf file
-    source = tmpdir / "test.nc"
+    source = tmp_path / "test.nc"
     ds = xr.Dataset(
         {
             "u10": xr.DataArray(
@@ -74,15 +74,15 @@ def nc_data_source(tmpdir):
     )
 
 
-def test_swandata_write(tmpdir, nc_data_source):
+def test_swandata_write(tmp_path, nc_data_source):
     swangrid = SwanGrid(x0=0, y0=0, dx=1, dy=1, nx=10, ny=10)
     config_ref = (
         "INPGRID WIND REG 0.0 0.0 0.0 9 9 1.0 1.0 EXC -99.0 NONSTATION 20000101.000000 24.0 HR\n"
     )
     config_ref += "READINP WIND 1.0 'wind.grd' 3 0 1 0 FREE\n"
-    config = nc_data_source.get(tmpdir, swangrid)
+    config = nc_data_source.get(tmp_path, swangrid)
     assert config == config_ref
 
 
-def test_bathy_write(tmpdir, nc_bathy):
-    config = nc_bathy.get(tmpdir)
+def test_bathy_write(tmp_path, nc_bathy):
+    config = nc_bathy.get(tmp_path)
