@@ -1,10 +1,10 @@
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Copyright (c) 2020 - 2021, CSIRO
 #
 # All rights reserved.
 #
 # The full license is in the LICENSE file, distributed with this software.
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 from re import T
 from intake_xarray.base import DataSourceMixin
@@ -12,8 +12,7 @@ from pandas import to_timedelta, to_datetime
 
 import logging
 
-logger = logging.getLogger('rompy.intake')
-
+logger = logging.getLogger("rompy.intake")
 
 
 class NetCDFFCStackSource(DataSourceMixin):
@@ -70,12 +69,25 @@ class NetCDFFCStackSource(DataSourceMixin):
         If using a remote fs (whether caching locally or not), these are
         the kwargs to pass to that FS.
     """
-    name = 'netcdf_fcstack'
 
-    def __init__(self, urlpath, fn_fmt='', fmt_fields=None, url_replace=None, ds_filters=None,
-                 startdt = None, enddt = None, hindcast = False,
-                 chunks=None, xarray_kwargs=None, metadata=None,
-                 storage_options=None, **kwargs):
+    name = "netcdf_fcstack"
+
+    def __init__(
+        self,
+        urlpath,
+        fn_fmt="",
+        fmt_fields=None,
+        url_replace=None,
+        ds_filters=None,
+        startdt=None,
+        enddt=None,
+        hindcast=False,
+        chunks=None,
+        xarray_kwargs=None,
+        metadata=None,
+        storage_options=None,
+        **kwargs,
+    ):
 
         self.fn_fmt = fn_fmt
         self.url_replace = url_replace or {}
@@ -95,10 +107,11 @@ class NetCDFFCStackSource(DataSourceMixin):
     # Replicating intakes PatternMixin
     @property
     def deterministic_pattern(self):
-        if hasattr(self, '_deterministic_pattern'):
+        if hasattr(self, "_deterministic_pattern"):
             return self._deterministic_pattern
-        raise KeyError('Plugin needs to set `deterministic_pattern`'
-                       ' before setting urlpath')
+        raise KeyError(
+            "Plugin needs to set `deterministic_pattern`" " before setting urlpath"
+        )
 
     @deterministic_pattern.setter
     def deterministic_pattern(self, deterministic_pattern):
@@ -112,16 +125,18 @@ class NetCDFFCStackSource(DataSourceMixin):
     def urlpath(self, urlpath):
         from .utils import walk_server
 
-        if hasattr(self, '_original_urlpath'):
+        if hasattr(self, "_original_urlpath"):
             self._urlpath = urlpath
             return
 
         self._original_urlpath = urlpath
 
         if self.deterministic_pattern:
-            logger.info(f'Scanning urlpath={urlpath}\n fn_fmt={self.fn_fmt}')
-            self._urlpath = walk_server(urlpath, self.fn_fmt, self.fmt_fields, self.url_replace)
-            logger.info(f'Found {len(self.urlpath)}')
+            logger.info(f"Scanning urlpath={urlpath}\n fn_fmt={self.fn_fmt}")
+            self._urlpath = walk_server(
+                urlpath, self.fn_fmt, self.fmt_fields, self.url_replace
+            )
+            logger.info(f"Found {len(self.urlpath)}")
         else:
             self._urlpath = urlpath
 
@@ -137,49 +152,75 @@ class NetCDFFCStackSource(DataSourceMixin):
 
         # Ensure a time normalisation filter is applied to each dataset
         from .core.filters import timenorm_filter
-        if ('timenorm' not in self.ds_filters.keys()) and (timenorm_filter not in self.ds_filters.keys()):
-            self.ds_filters[timenorm_filter]={'interval':'hour'}
 
-        if isinstance(self.urlpath,list):
+        if ("timenorm" not in self.ds_filters.keys()) and (
+            timenorm_filter not in self.ds_filters.keys()
+        ):
+            self.ds_filters[timenorm_filter] = {"interval": "hour"}
+
+        if isinstance(self.urlpath, list):
             if len(self.urlpath) == 0:
-                raise ValueError(f'No urls matched for query: {self}')
+                raise ValueError(f"No urls matched for query: {self}")
             elif len(self.urlpath) == 1:
-                ds = _open_preprocess(self.urlpath[0],self.chunks,self.ds_filters,self.xarray_kwargs)
-                ds = ds.expand_dims('init')
+                ds = _open_preprocess(
+                    self.urlpath[0], self.chunks, self.ds_filters, self.xarray_kwargs
+                )
+                ds = ds.expand_dims("init")
             elif len(self.urlpath) > 1:
-                __open_preprocess=delayed(_open_preprocess)
-                futures = [__open_preprocess(url,self.chunks,self.ds_filters,self.xarray_kwargs) for url in self.urlpath]
-                dsets = compute(*futures,traverse=False)
-                if len(dsets[0].lead) == 1: # Assumes this indicates that each timestep of forecase is separate file
+                __open_preprocess = delayed(_open_preprocess)
+                futures = [
+                    __open_preprocess(
+                        url, self.chunks, self.ds_filters, self.xarray_kwargs
+                    )
+                    for url in self.urlpath
+                ]
+                dsets = compute(*futures, traverse=False)
+                if (
+                    len(dsets[0].lead) == 1
+                ):  # Assumes this indicates that each timestep of forecase is separate file
                     inits = sorted([to_datetime(ds.init.values[0]) for ds in dsets])
                     dsets_concat = []
                     for i in set(inits):
                         subset = [ds for ds in dsets if ds.init.values[0] == i]
-                        ds_concat = xr.concat(subset,
-                                              dim='lead',
-                                              coords=['time'],
-                                              compat="override",
-                                              combine_attrs="override")
-                        ds_concat['init'] = (('init',), [i,])
+                        ds_concat = xr.concat(
+                            subset,
+                            dim="lead",
+                            coords=["time"],
+                            compat="override",
+                            combine_attrs="override",
+                        )
+                        ds_concat["init"] = (
+                            ("init",),
+                            [
+                                i,
+                            ],
+                        )
                         dsets_concat.append(ds_concat)
                     dsets = dsets_concat
-                ds = xr.concat(dsets, dim='init',
-                                      coords=['time'],
-                                      compat="override",
-                                      combine_attrs="override")
+                ds = xr.concat(
+                    dsets,
+                    dim="init",
+                    coords=["time"],
+                    compat="override",
+                    combine_attrs="override",
+                )
         else:
-            raise ValueError('Internal error. Expected urlpath path pattern string to have been expanded to a list')
+            raise ValueError(
+                "Internal error. Expected urlpath path pattern string to have been expanded to a list"
+            )
 
         if self.hindcast:
-            ds = ds.stack(forecast_time=['init','lead'])
-            max_init_time = ds['init'].groupby('time').max()
-            min_lead_time = ds['lead'].groupby('time').min()
-            ds = ds.sel(forecast_time=list(zip(max_init_time.values, min_lead_time.values)))
-            ds = ds.reset_index('forecast_time').swap_dims({'forecast_time':'time'})
+            ds = ds.stack(forecast_time=["init", "lead"])
+            max_init_time = ds["init"].groupby("time").max()
+            min_lead_time = ds["lead"].groupby("time").min()
+            ds = ds.sel(
+                forecast_time=list(zip(max_init_time.values, min_lead_time.values))
+            )
+            ds = ds.reset_index("forecast_time").swap_dims({"forecast_time": "time"})
 
             # Finally return the composed dataset, cropped back to cover the requested time period
             if self.startdt is not None:
-                ds = ds.sel(time=slice(self.startdt,self.enddt))
+                ds = ds.sel(time=slice(self.startdt, self.enddt))
 
         else:
 
@@ -188,11 +229,9 @@ class NetCDFFCStackSource(DataSourceMixin):
                 inds = ds.time >= self.startdt
                 if self.enddt is not None:
                     inds = inds & (ds.time <= self.enddt)
-                ds = ds.where(inds,drop=True)
+                ds = ds.where(inds, drop=True)
 
         self._ds = ds
-
-
 
 
 class NetCDFAODNStackSource(DataSourceMixin):
@@ -241,13 +280,23 @@ class NetCDFAODNStackSource(DataSourceMixin):
         If using a remote fs (whether caching locally or not), these are
         the kwargs to pass to that FS.
     """
-    name = 'netcdf_aodnstack'
 
-    def __init__(self, urlpath,thredds_prefix,
-                 startdt, enddt, geom,
-                 ds_filters=None,
-                 chunks=None, xarray_kwargs=None, metadata=None,
-                 storage_options=None, **kwargs):
+    name = "netcdf_aodnstack"
+
+    def __init__(
+        self,
+        urlpath,
+        thredds_prefix,
+        startdt,
+        enddt,
+        geom,
+        ds_filters=None,
+        chunks=None,
+        xarray_kwargs=None,
+        metadata=None,
+        storage_options=None,
+        **kwargs,
+    ):
 
         self.thredds_prefix = thredds_prefix
         self.startdt = to_datetime(startdt)
@@ -266,18 +315,22 @@ class NetCDFAODNStackSource(DataSourceMixin):
 
     @urlpath.setter
     def urlpath(self, urlpath):
-        if hasattr(self, '_original_urlpath'):
+        if hasattr(self, "_original_urlpath"):
             self._urlpath = urlpath
             return
 
         self._original_urlpath = urlpath
 
         import geopandas as gpd
+
         df = gpd.read_file(urlpath)
-        if 'file_url' in df: df = df.file_url
-        elif 'url' in df: df = df.url
-        else: raise KeyError(f'No url field for AODN request')
-        self._urlpath = [self.thredds_prefix+i for i in list(df)]
+        if "file_url" in df:
+            df = df.file_url
+        elif "url" in df:
+            df = df.url
+        else:
+            raise KeyError(f"No url field for AODN request")
+        self._urlpath = [self.thredds_prefix + i for i in list(df)]
 
     def _open_dataset(self):
         import xarray as xr
@@ -287,30 +340,48 @@ class NetCDFAODNStackSource(DataSourceMixin):
 
         # Ensure a time and spatial filter is applied to each dataset
         from .core.filters import crop_filter
-        if ('crop' not in self.ds_filters.keys()) and (crop_filter not in self.ds_filters.keys()):
+
+        if ("crop" not in self.ds_filters.keys()) and (
+            crop_filter not in self.ds_filters.keys()
+        ):
             import shapely.wkt
+
             lon, lat = shapely.wkt.loads(self.geom).exterior.coords.xy
-            self.ds_filters['crop']={'TIME':slice(f'{self.startdt}',f'{self.enddt}'),
-                                     'LATITUDE':(f'{min(lat)}',f'{max(lat)}'),
-                                     'LONGITUDE':(f'{min(lon)}',f'{max(lon)}')}
+            self.ds_filters["crop"] = {
+                "TIME": slice(f"{self.startdt}", f"{self.enddt}"),
+                "LATITUDE": (f"{min(lat)}", f"{max(lat)}"),
+                "LONGITUDE": (f"{min(lon)}", f"{max(lon)}"),
+            }
 
-
-        if isinstance(self.urlpath,list):
+        if isinstance(self.urlpath, list):
             if len(self.urlpath) == 0:
-                raise ValueError(f'No urls matched for query: {self}')
+                raise ValueError(f"No urls matched for query: {self}")
             elif len(self.urlpath) == 1:
-                ds = _open_preprocess(self.urlpath[0],self.chunks,self.ds_filters,self.xarray_kwargs)
-                ds = ds.expand_dims('init')
+                ds = _open_preprocess(
+                    self.urlpath[0], self.chunks, self.ds_filters, self.xarray_kwargs
+                )
+                ds = ds.expand_dims("init")
             elif len(self.urlpath) > 1:
-                __open_preprocess=delayed(_open_preprocess)
-                futures = [__open_preprocess(url,self.chunks,self.ds_filters,self.xarray_kwargs) for url in self.urlpath]
-                dsets = compute(*futures,traverse=False)
-                ds = xr.concat(dsets, dim='TIME',
-                                      coords=['TIME'],
-                                      compat="override",
-                                      combine_attrs="override")
-                if 'sort' in self.ds_filters.keys(): ds=ds.sortby(self.ds_filters['sort']['coords'])
+                __open_preprocess = delayed(_open_preprocess)
+                futures = [
+                    __open_preprocess(
+                        url, self.chunks, self.ds_filters, self.xarray_kwargs
+                    )
+                    for url in self.urlpath
+                ]
+                dsets = compute(*futures, traverse=False)
+                ds = xr.concat(
+                    dsets,
+                    dim="TIME",
+                    coords=["TIME"],
+                    compat="override",
+                    combine_attrs="override",
+                )
+                if "sort" in self.ds_filters.keys():
+                    ds = ds.sortby(self.ds_filters["sort"]["coords"])
         else:
-            raise ValueError('Internal error. Expected urlpath path pattern string to have been expanded to a list')
+            raise ValueError(
+                "Internal error. Expected urlpath path pattern string to have been expanded to a list"
+            )
 
         self._ds = ds

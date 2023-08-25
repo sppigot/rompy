@@ -92,7 +92,7 @@ def isfile(path: str | Path, **kwargs) -> bool:
     return fs.isfile(path)
 
 
-def makedirs(path: str | Path, exist_ok: bool=False, **kwargs):
+def makedirs(path: str | Path, exist_ok: bool = False, **kwargs):
     """Recursively make directories.
 
     Parameters
@@ -110,7 +110,7 @@ def makedirs(path: str | Path, exist_ok: bool=False, **kwargs):
     fs.makedir(path, create_parents=exist_ok)
 
 
-def rm(path: str | Path | list, recursive: bool=False, **kwargs):
+def rm(path: str | Path | list, recursive: bool = False, **kwargs):
     """Recursively make directories.
 
     Parameters
@@ -131,9 +131,9 @@ def rm(path: str | Path | list, recursive: bool=False, **kwargs):
 def get(
     src: str | Path,
     dst: str | Path,
-    recursive: bool=False,
-    check: bool=False,
-    **kwargs
+    recursive: bool = False,
+    check: bool = False,
+    **kwargs,
 ) -> str:
     """Download file or folder from src to dst.
 
@@ -172,9 +172,9 @@ def get(
 def put(
     src: str | Path,
     dst: str | Path,
-    recursive: bool=False,
-    check: bool=False,
-    **kwargs
+    recursive: bool = False,
+    check: bool = False,
+    **kwargs,
 ):
     """Upload file or folder from src to dst.
 

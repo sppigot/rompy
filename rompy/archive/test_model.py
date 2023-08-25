@@ -12,4 +12,3 @@ def test_instantiate(tmpdir):
         children=[child0, child1],
     )
     print(model)
-

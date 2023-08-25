@@ -9,8 +9,7 @@ from rompy import transform
 def dset():
     dset = xr.Dataset()
     dset["wspd"] = xr.DataArray(
-        data=[[1.0, 3.5, 1.2], [2.0, 3.0, 4.0]],
-        coords={"y": [10, 20], "x": [0, 2, 1]}
+        data=[[1.0, 3.5, 1.2], [2.0, 3.0, 4.0]], coords={"y": [10, 20], "x": [0, 2, 1]}
     )
     dset["wdir"] = dset.wspd * 10
     yield dset
