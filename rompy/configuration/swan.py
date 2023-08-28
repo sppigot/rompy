@@ -12,9 +12,3 @@ from rompy.configuration.base import BaseConfig
 from rompy.core import RegularGrid
 from rompy.data import DataGrid
 from rompy.types import Coordinate
-
-
-
-
-
-

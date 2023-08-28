@@ -34,6 +34,7 @@ class Model(BaseModel):
         Logger level, see https://docs.python.org/3/library/logging.html#levels.
 
     """
+
     id: str
     kind: str
     workdir: Path
@@ -70,4 +71,3 @@ class Model(BaseModel):
 
     def postprocess(self):
         """Postprocess and upload model results."""
-

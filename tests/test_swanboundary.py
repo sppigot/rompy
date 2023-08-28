@@ -21,9 +21,9 @@ def grid():
     yield SwanGrid(x0=110, y0=-30, dx=0.5, dy=0.5, nx=10, ny=10, rot=77)
 
 
-def test_source_wavespectra(tmpdir):
+def test_source_wavespectra(tmp_path):
     dset = xr.open_dataset(HERE / "data/aus-20230101.nc")
-    outfile = tmpdir / "aus-20230101.swn"
+    outfile = tmp_path / "aus-20230101.swn"
     dset.spec.to_swan(outfile)
     dataset = SourceWavespectra(
         uri=outfile,
@@ -48,7 +48,7 @@ def test_source_intake():
     assert hasattr(dataset.open(), "spec")
 
 
-def test_data_boundary_spacing_from_dataset(tmpdir, time, grid):
+def test_data_boundary_spacing_from_dataset(tmp_path, time, grid):
     bnd = DataBoundary(
         id="westaus",
         source=SourceFile(
@@ -60,14 +60,14 @@ def test_data_boundary_spacing_from_dataset(tmpdir, time, grid):
         rectangle="closed",
     )
     bnd._filter_time(time=time)
-    bnd.get(stage_dir=tmpdir, grid=grid)
-    ds = read_swan(tmpdir / "westaus.bnd")
+    bnd.get(stage_dir=tmp_path, grid=grid)
+    ds = read_swan(tmp_path / "westaus.bnd")
     xbnd, ybnd = bnd._boundary_points(grid)
     assert xbnd == pytest.approx(ds.lon.values)
     assert ybnd == pytest.approx(ds.lat.values)
 
 
-def test_data_boundary_custom_spacing(tmpdir, time, grid):
+def test_data_boundary_custom_spacing(tmp_path, time, grid):
     bnd = DataBoundary(
         id="westaus",
         source=SourceFile(
@@ -80,14 +80,14 @@ def test_data_boundary_custom_spacing(tmpdir, time, grid):
         rectangle="closed",
     )
     bnd._filter_time(time=time)
-    bnd.get(stage_dir=tmpdir, grid=grid)
-    ds = read_swan(tmpdir / "westaus.bnd")
+    bnd.get(stage_dir=tmp_path, grid=grid)
+    ds = read_swan(tmp_path / "westaus.bnd")
     xbnd, ybnd = bnd._boundary_points(grid)
     assert xbnd == pytest.approx(ds.lon.values)
     assert ybnd == pytest.approx(ds.lat.values)
 
 
-def test_data_boundary_spacing_lt_perimeter(tmpdir, time, grid):
+def test_data_boundary_spacing_lt_perimeter(tmp_path, time, grid):
     with pytest.raises(ValueError):
         bnd = DataBoundary(
             id="westaus",
@@ -101,5 +101,4 @@ def test_data_boundary_spacing_lt_perimeter(tmpdir, time, grid):
             rectangle="closed",
         )
         bnd._filter_time(time=time)
-        bnd.get(stage_dir=tmpdir, grid=grid)
-
+        bnd.get(stage_dir=tmp_path, grid=grid)

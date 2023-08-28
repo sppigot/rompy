@@ -14,18 +14,18 @@ def grid():
 
 
 @pytest.fixture
-def model(tmpdir):
+def model(tmp_path):
     return ModelRun(
         run_id="test_swan",
-        output_dir=str(tmpdir),
+        output_dir=str(tmp_path),
     )
 
 
 @pytest.fixture
-def nesting(tmpdir):
+def nesting(tmp_path):
     return ModelRun(
         run_id="test_nesting",
-        output_dir=str(tmpdir),
+        output_dir=str(tmp_path),
         config=SwanConfig(
             subnests=[
                 SwanConfig(),
@@ -36,33 +36,33 @@ def nesting(tmpdir):
 
 
 @pytest.mark.skip(reason="Overlap here with swan temlate tests - need to consolidate")
-def test_generate(tmpdir, model):
+def test_generate(tmp_path, model):
     model.config.write(
         ModelRun(
             run_id="test_swan",
-            output_dir=str(tmpdir),
+            output_dir=str(tmp_path),
         )
     )
     compare_files(
-        tmpdir / model.run_id / "INPUT",
+        tmp_path / model.run_id / "INPUT",
         here / "simulations/test_swan_ref/INPUT",
     )
 
 
-def test_swan_input(tmpdir, grid):
+def test_swan_input(tmp_path, grid):
     model = ModelRun(
         run_id="test_swan",
-        output_dir=str(tmpdir),
+        output_dir=str(tmp_path),
         config=SwanConfig(grid=grid, physics=dict(friction="MAD")),
     )
     assert model.config.physics.friction == "MAD"
 
 
-def test_failing_friction(tmpdir):
+def test_failing_friction(tmp_path):
     with pytest.raises(ValueError):
         model = ModelRun(
             run_id="test_swan",
-            output_dir=str(tmpdir),
+            output_dir=str(tmp_path),
             config=dict(friction="BAD", model_type="swan"),
         )
 
