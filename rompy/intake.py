@@ -1,10 +1,10 @@
-#-----------------------------------------------------------------------------
-# Copyright (c) 2020 - 2021, CSIRO 
+# -----------------------------------------------------------------------------
+# Copyright (c) 2020 - 2021, CSIRO
 #
 # All rights reserved.
 #
 # The full license is in the LICENSE file, distributed with this software.
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 from re import T
 from intake_xarray.base import DataSourceMixin
@@ -12,8 +12,7 @@ from pandas import to_timedelta, to_datetime
 
 import logging
 
-logger = logging.getLogger('rompy.intake')
-
+logger = logging.getLogger("rompy.intake")
 
 
 class NetCDFFCStackSource(DataSourceMixin):
@@ -34,16 +33,16 @@ class NetCDFFCStackSource(DataSourceMixin):
         Example:
             - ``air_{month}.nc``
     fmt_fields: dict
-        Dictionary of keys corresponding to urlpath format entries. The product of 
-        all values is broadcast across urlpath to establish a finite set of locations 
+        Dictionary of keys corresponding to urlpath format entries. The product of
+        all values is broadcast across urlpath to establish a finite set of locations
         to look for source files.
     url_replace:
         Dictionary of string substitutions to be made on found urls.
         Example:
             - {'catalog':'dodsC'}
     ds_filters:
-        Dictionary of common dataset manipulations that are applied in order 
-        during dataset preprocessing. Configurable from catalog entry yaml. 
+        Dictionary of common dataset manipulations that are applied in order
+        during dataset preprocessing. Configurable from catalog entry yaml.
         Filters currently available are ['sort','subset','crop','timenorm','rename']
         Examples:
             - {'rename':{'dir':'mean_dir'},
@@ -52,13 +51,13 @@ class NetCDFFCStackSource(DataSourceMixin):
                'crop':{'lon':slice(-32.2,-33.2),
                        'lat':slice(114.,115.)}
                }
-        Additional documentation to follow - see source code for xarray 
+        Additional documentation to follow - see source code for xarray
         implementation details.
     startdt, enddt: datetime, optional
-        Start and end dates to crop final stacked dataset to. 
+        Start and end dates to crop final stacked dataset to.
     hindcast: bool, optional
-        Rather than return a stack of forecasts, return a dataset with a 
-        unique time dimension selecting the minimum lead time for each time point. 
+        Rather than return a stack of forecasts, return a dataset with a
+        unique time dimension selecting the minimum lead time for each time point.
         Useful for establishing a pseudo-reanalysis dataset from a stack of forecasts.
     chunks : int or dict, optional
         Chunks is used to load the new dataset into dask
@@ -70,13 +69,26 @@ class NetCDFFCStackSource(DataSourceMixin):
         If using a remote fs (whether caching locally or not), these are
         the kwargs to pass to that FS.
     """
-    name = 'netcdf_fcstack'
 
-    def __init__(self, urlpath, fn_fmt='', fmt_fields=None, url_replace=None, ds_filters=None,
-                 startdt = None, enddt = None, hindcast = False,
-                 chunks=None, xarray_kwargs=None, metadata=None,
-                 storage_options=None, **kwargs):
-        
+    name = "netcdf_fcstack"
+
+    def __init__(
+        self,
+        urlpath,
+        fn_fmt="",
+        fmt_fields=None,
+        url_replace=None,
+        ds_filters=None,
+        startdt=None,
+        enddt=None,
+        hindcast=False,
+        chunks=None,
+        xarray_kwargs=None,
+        metadata=None,
+        storage_options=None,
+        **kwargs,
+    ):
+
         self.fn_fmt = fn_fmt
         self.url_replace = url_replace or {}
         self.fmt_fields = fmt_fields or {}
@@ -95,10 +107,11 @@ class NetCDFFCStackSource(DataSourceMixin):
     # Replicating intakes PatternMixin
     @property
     def deterministic_pattern(self):
-        if hasattr(self, '_deterministic_pattern'):
+        if hasattr(self, "_deterministic_pattern"):
             return self._deterministic_pattern
-        raise KeyError('Plugin needs to set `deterministic_pattern`'
-                       ' before setting urlpath')
+        raise KeyError(
+            "Plugin needs to set `deterministic_pattern`" " before setting urlpath"
+        )
 
     @deterministic_pattern.setter
     def deterministic_pattern(self, deterministic_pattern):
@@ -112,74 +125,102 @@ class NetCDFFCStackSource(DataSourceMixin):
     def urlpath(self, urlpath):
         from .utils import walk_server
 
-        if hasattr(self, '_original_urlpath'):
+        if hasattr(self, "_original_urlpath"):
             self._urlpath = urlpath
             return
 
         self._original_urlpath = urlpath
 
         if self.deterministic_pattern:
-            logger.info(f'Scanning urlpath={urlpath}\n fn_fmt={self.fn_fmt}')
-            self._urlpath = walk_server(urlpath, self.fn_fmt, self.fmt_fields, self.url_replace)
-            logger.info(f'Found {len(self.urlpath)}')
+            logger.info(f"Scanning urlpath={urlpath}\n fn_fmt={self.fn_fmt}")
+            self._urlpath = walk_server(
+                urlpath, self.fn_fmt, self.fmt_fields, self.url_replace
+            )
+            logger.info(f"Found {len(self.urlpath)}")
         else:
             self._urlpath = urlpath
 
         if isinstance(self.deterministic_pattern, bool):
             if isinstance(urlpath, str) and self._urlpath == urlpath:
                 self.deterministic_pattern = False
-    
+
     def _open_dataset(self):
         import xarray as xr
         from dask import delayed, compute
         import dask.config as dc
-        from .filters import _open_preprocess
+        from .core.filters import _open_preprocess
 
         # Ensure a time normalisation filter is applied to each dataset
-        from .filters import timenorm_filter
-        if ('timenorm' not in self.ds_filters.keys()) and (timenorm_filter not in self.ds_filters.keys()):
-            self.ds_filters[timenorm_filter]={'interval':'hour'}
+        from .core.filters import timenorm_filter
 
-        if isinstance(self.urlpath,list):
+        if ("timenorm" not in self.ds_filters.keys()) and (
+            timenorm_filter not in self.ds_filters.keys()
+        ):
+            self.ds_filters[timenorm_filter] = {"interval": "hour"}
+
+        if isinstance(self.urlpath, list):
             if len(self.urlpath) == 0:
-                raise ValueError(f'No urls matched for query: {self}')
+                raise ValueError(f"No urls matched for query: {self}")
             elif len(self.urlpath) == 1:
-                ds = _open_preprocess(self.urlpath[0],self.chunks,self.ds_filters,self.xarray_kwargs)
-                ds = ds.expand_dims('init')
+                ds = _open_preprocess(
+                    self.urlpath[0], self.chunks, self.ds_filters, self.xarray_kwargs
+                )
+                ds = ds.expand_dims("init")
             elif len(self.urlpath) > 1:
-                __open_preprocess=delayed(_open_preprocess)
-                futures = [__open_preprocess(url,self.chunks,self.ds_filters,self.xarray_kwargs) for url in self.urlpath]
-                dsets = compute(*futures,traverse=False)
-                if len(dsets[0].lead) == 1: # Assumes this indicates that each timestep of forecase is separate file
+                __open_preprocess = delayed(_open_preprocess)
+                futures = [
+                    __open_preprocess(
+                        url, self.chunks, self.ds_filters, self.xarray_kwargs
+                    )
+                    for url in self.urlpath
+                ]
+                dsets = compute(*futures, traverse=False)
+                if (
+                    len(dsets[0].lead) == 1
+                ):  # Assumes this indicates that each timestep of forecase is separate file
                     inits = sorted([to_datetime(ds.init.values[0]) for ds in dsets])
                     dsets_concat = []
                     for i in set(inits):
                         subset = [ds for ds in dsets if ds.init.values[0] == i]
-                        ds_concat = xr.concat(subset,
-                                              dim='lead',
-                                              coords=['time'],
-                                              compat="override", 
-                                              combine_attrs="override")
-                        ds_concat['init'] = (('init',), [i,])
+                        ds_concat = xr.concat(
+                            subset,
+                            dim="lead",
+                            coords=["time"],
+                            compat="override",
+                            combine_attrs="override",
+                        )
+                        ds_concat["init"] = (
+                            ("init",),
+                            [
+                                i,
+                            ],
+                        )
                         dsets_concat.append(ds_concat)
                     dsets = dsets_concat
-                ds = xr.concat(dsets, dim='init', 
-                                      coords=['time'], 
-                                      compat="override", 
-                                      combine_attrs="override")
+                ds = xr.concat(
+                    dsets,
+                    dim="init",
+                    coords=["time"],
+                    compat="override",
+                    combine_attrs="override",
+                )
         else:
-            raise ValueError('Internal error. Expected urlpath path pattern string to have been expanded to a list')
+            raise ValueError(
+                "Internal error. Expected urlpath path pattern string to have been expanded to a list"
+            )
 
         if self.hindcast:
-            ds = ds.stack(forecast_time=['init','lead'])
-            max_init_time = ds['init'].groupby('time').max()
-            min_lead_time = ds['lead'].groupby('time').min()
-            ds = ds.sel(forecast_time=list(zip(max_init_time.values, min_lead_time.values)))
-            ds = ds.reset_index('forecast_time').rename({'forecast_time':'time'})
+            ds = ds.stack(forecast_time=["init", "lead"])
+            max_init_time = ds["init"].groupby("time").max()
+            min_lead_time = ds["lead"].groupby("time").min()
+            ds = ds.sel(
+                forecast_time=list(zip(max_init_time.values, min_lead_time.values))
+            )
+            ds = ds.reset_index("forecast_time").swap_dims({"forecast_time": "time"})
 
             # Finally return the composed dataset, cropped back to cover the requested time period
             if self.startdt is not None:
-                ds = ds.sel(time=slice(self.startdt,self.enddt))
+                ds = ds.sel(time=slice(self.startdt, self.enddt))
 
         else:
 
@@ -188,11 +229,9 @@ class NetCDFFCStackSource(DataSourceMixin):
                 inds = ds.time >= self.startdt
                 if self.enddt is not None:
                     inds = inds & (ds.time <= self.enddt)
-                ds = ds.where(inds,drop=True)
-            
+                ds = ds.where(inds, drop=True)
+
         self._ds = ds
-
-
 
 
 class NetCDFAODNStackSource(DataSourceMixin):
@@ -211,7 +250,7 @@ class NetCDFAODNStackSource(DataSourceMixin):
         Thredd prefix to be added to product of scanned urls.
         Some examples:
             - ``"http://thredds.aodn.org.au/thredds/dodsC/"``
-        Note that the final path uses startdt, enddt and geom parameters.    
+        Note that the final path uses startdt, enddt and geom parameters.
     startdt, enddt: datetime
         Start and end dates used to retrieve AODN data and crop final stacked dataset to.
     geom: str
@@ -219,8 +258,8 @@ class NetCDFAODNStackSource(DataSourceMixin):
         Some examples:
             - 'POLYGON ((111.0000000000000000 -33.0000000000000000, 111.0000000000000000 -31.5000000000000000, 115.8000030517578125 -31.5000000000000000, 115.8000030517578125 -33.0000000000000000, 111.0000000000000000 -33.0000000000000000))'
     ds_filters:
-        Dictionary of common dataset manipulations that are applied in order 
-        during dataset preprocessing. Configurable from catalog entry yaml. 
+        Dictionary of common dataset manipulations that are applied in order
+        during dataset preprocessing. Configurable from catalog entry yaml.
         Filters currently available are ['sort','subset','crop','timenorm','rename']
         Examples:
             - {'rename':{'dir':'mean_dir'},
@@ -229,7 +268,7 @@ class NetCDFAODNStackSource(DataSourceMixin):
                'crop':{'lon':slice(-32.2,-33.2),
                        'lat':slice(114.,115.)}
                }
-        Additional documentation to follow - see source code for xarray 
+        Additional documentation to follow - see source code for xarray
         implementation details.
     chunks : int or dict, optional
         Chunks is used to load the new dataset into dask
@@ -241,14 +280,24 @@ class NetCDFAODNStackSource(DataSourceMixin):
         If using a remote fs (whether caching locally or not), these are
         the kwargs to pass to that FS.
     """
-    name = 'netcdf_aodnstack'
 
-    def __init__(self, urlpath,thredds_prefix,
-                 startdt, enddt, geom,
-                 ds_filters=None,
-                 chunks=None, xarray_kwargs=None, metadata=None,
-                 storage_options=None, **kwargs):
-        
+    name = "netcdf_aodnstack"
+
+    def __init__(
+        self,
+        urlpath,
+        thredds_prefix,
+        startdt,
+        enddt,
+        geom,
+        ds_filters=None,
+        chunks=None,
+        xarray_kwargs=None,
+        metadata=None,
+        storage_options=None,
+        **kwargs,
+    ):
+
         self.thredds_prefix = thredds_prefix
         self.startdt = to_datetime(startdt)
         self.enddt = to_datetime(enddt)
@@ -266,51 +315,73 @@ class NetCDFAODNStackSource(DataSourceMixin):
 
     @urlpath.setter
     def urlpath(self, urlpath):
-        if hasattr(self, '_original_urlpath'):
+        if hasattr(self, "_original_urlpath"):
             self._urlpath = urlpath
             return
 
         self._original_urlpath = urlpath
 
         import geopandas as gpd
+
         df = gpd.read_file(urlpath)
-        if 'file_url' in df: df = df.file_url
-        elif 'url' in df: df = df.url
-        else: raise KeyError(f'No url field for AODN request')
-        self._urlpath = [self.thredds_prefix+i for i in list(df)]
-    
+        if "file_url" in df:
+            df = df.file_url
+        elif "url" in df:
+            df = df.url
+        else:
+            raise KeyError(f"No url field for AODN request")
+        self._urlpath = [self.thredds_prefix + i for i in list(df)]
+
     def _open_dataset(self):
         import xarray as xr
         from dask import delayed, compute
         import dask.config as dc
-        from .filters import _open_preprocess
+        from .core.filters import _open_preprocess
 
         # Ensure a time and spatial filter is applied to each dataset
-        from .filters import crop_filter
-        if ('crop' not in self.ds_filters.keys()) and (crop_filter not in self.ds_filters.keys()):
+        from .core.filters import crop_filter
+
+        if ("crop" not in self.ds_filters.keys()) and (
+            crop_filter not in self.ds_filters.keys()
+        ):
             import shapely.wkt
+
             lon, lat = shapely.wkt.loads(self.geom).exterior.coords.xy
-            self.ds_filters['crop']={'TIME':slice(f'{self.startdt}',f'{self.enddt}'),
-                                     'LATITUDE':(f'{min(lat)}',f'{max(lat)}'),
-                                     'LONGITUDE':(f'{min(lon)}',f'{max(lon)}')}
+            self.ds_filters["crop"] = {
+                "TIME": slice(f"{self.startdt}", f"{self.enddt}"),
+                "LATITUDE": (f"{min(lat)}", f"{max(lat)}"),
+                "LONGITUDE": (f"{min(lon)}", f"{max(lon)}"),
+            }
 
-
-        if isinstance(self.urlpath,list):
+        if isinstance(self.urlpath, list):
             if len(self.urlpath) == 0:
-                raise ValueError(f'No urls matched for query: {self}')
+                raise ValueError(f"No urls matched for query: {self}")
             elif len(self.urlpath) == 1:
-                ds = _open_preprocess(self.urlpath[0],self.chunks,self.ds_filters,self.xarray_kwargs)
-                ds = ds.expand_dims('init')
+                ds = _open_preprocess(
+                    self.urlpath[0], self.chunks, self.ds_filters, self.xarray_kwargs
+                )
+                ds = ds.expand_dims("init")
             elif len(self.urlpath) > 1:
-                __open_preprocess=delayed(_open_preprocess)
-                futures = [__open_preprocess(url,self.chunks,self.ds_filters,self.xarray_kwargs) for url in self.urlpath]
-                dsets = compute(*futures,traverse=False)
-                ds = xr.concat(dsets, dim='TIME', 
-                                      coords=['TIME'], 
-                                      compat="override", 
-                                      combine_attrs="override")
-                if 'sort' in self.ds_filters.keys(): ds=ds.sortby(self.ds_filters['sort']['coords'])
+                __open_preprocess = delayed(_open_preprocess)
+                futures = [
+                    __open_preprocess(
+                        url, self.chunks, self.ds_filters, self.xarray_kwargs
+                    )
+                    for url in self.urlpath
+                ]
+                dsets = compute(*futures, traverse=False)
+                ds = xr.concat(
+                    dsets,
+                    dim="TIME",
+                    coords=["TIME"],
+                    compat="override",
+                    combine_attrs="override",
+                )
+                if "sort" in self.ds_filters.keys():
+                    ds = ds.sortby(self.ds_filters["sort"]["coords"])
         else:
-            raise ValueError('Internal error. Expected urlpath path pattern string to have been expanded to a list')
-            
+            raise ValueError(
+                "Internal error. Expected urlpath path pattern string to have been expanded to a list"
+            )
+
         self._ds = ds
