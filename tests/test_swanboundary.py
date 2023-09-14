@@ -102,3 +102,18 @@ def test_data_boundary_spacing_lt_perimeter(tmp_path, time, grid):
         )
         bnd._filter_time(time=time)
         bnd.get(stage_dir=tmp_path, grid=grid)
+
+
+def test_source_wavespectra_ploting(tmp_path):
+    DataBoundary(
+        id="westaus",
+        source=SourceFile(
+            uri=HERE / "data/aus-20230101.nc",
+            kwargs=dict(engine="netcdf4"),
+        ),
+        spacing=1,
+        sel_method="idw",
+        tolerance=2.0,
+        rectangle="closed",
+        coords={'x':'lon', 'y': 'lat'}
+    ).plot()
