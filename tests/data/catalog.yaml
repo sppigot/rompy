@@ -1,19 +1,19 @@
 sources:
     gebco:
         driver: netcdf
-        description: "Subsample 5km of global GEBCO 2023"
+        description: 'Subsample 5km of global GEBCO 2023'
         args:
-            urlpath: "{{CATALOG_DIR}}/gebco-5km.nc"
-            chunks: {"lon": 32, "lat": 32}
+            urlpath: '{{CATALOG_DIR}}/gebco-2deg.nc'
+            chunks: {lon: 32, lat: 32}
     era5:
         driver: netcdf
-        description: "Subsample 5km of ERA5 wind 10m over 1-day"
+        description: 'Subsample 5km of ERA5 wind 10m over 1-day'
         args:
-            urlpath: "{{CATALOG_DIR}}/era5-20230101.nc"
-            chunks: {"longitude": 32, "latitude": 32}
+            urlpath: '{{CATALOG_DIR}}/era5-20230101.nc'
+            chunks: {longitude: 32, latitude: 32}
     ausspec:
         driver: netcdf
-        description: "Subset of wave spectra around Australia over 1-day"
+        description: Subset of wave spectra around Australia over 1-day'
         args:
-            urlpath: "{{CATALOG_DIR}}/aus-20230101.nc"
-            chunks: {"time": 1, "lon": 32, "lat": 32}
+            urlpath: '{{CATALOG_DIR}}/aus-20230101.nc'
+            chunks: {time: 1, lon: 32, lat: 32}
