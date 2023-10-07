@@ -3,7 +3,7 @@ sources:
         driver: netcdf
         description: 'Subsample 5km of global GEBCO 2023'
         args:
-            urlpath: '{{CATALOG_DIR}}/gebco-2deg.nc'
+            urlpath: '{{CATALOG_DIR}}/gebco-1deg.nc'
             chunks: {lon: 32, lat: 32}
     era5:
         driver: netcdf
