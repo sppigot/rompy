@@ -28,10 +28,9 @@ config:
     ndirs: 36
   forcing:
     wind:
-      model_type: swan
       id: wind 
       var: WIND 
-      dataset: 
+      source:
         model_type: intake
         catalog_uri: ../rompy/catalogs/oceanum.yaml
         dataset_id: era5_wind10m
@@ -45,7 +44,7 @@ config:
     bottom: 
       id: bottom
       var: BOTTOM
-      dataset: 
+      source:
         model_type: intake
         catalog_uri: ../rompy/catalogs/oceanum.yaml
         dataset_id: gebco_2022
@@ -55,7 +54,7 @@ config:
       lonname: lon
     boundary:
       id: bnd
-      dataset: 
+      source:
         model_type: intake
         catalog_uri: ../rompy/catalogs/oceanum.yaml
         dataset_id: oceanum_wave_nz_era5_v1_spec

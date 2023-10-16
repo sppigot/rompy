@@ -27,10 +27,9 @@ def nc_bathy(tmp_path):
     )
     ds.to_netcdf(source)
     return SwanDataGrid(
-        id="bottom",
+        var="bottom",
         source=SourceFile(uri=source),
         z1="depth",
-        var="BOTTOM",
         coords=DatasetCoords(
             x="lon",
             y="lat",
@@ -66,11 +65,10 @@ def nc_data_source(tmp_path):
     )
     ds.to_netcdf(source)
     return SwanDataGrid(
-        id="wind",
+        var="wind",
         source=SourceFile(uri=source),
         z1="u10",
         z2="v10",
-        variable="WIND",
     )
 
 
