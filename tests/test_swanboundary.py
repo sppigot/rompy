@@ -61,7 +61,7 @@ def test_data_boundary_spacing_from_dataset(tmp_path, time, grid):
         rectangle="closed",
     )
     bnd._filter_time(time=time)
-    bnd.get(stage_dir=tmp_path, grid=grid)
+    bnd.get(destdir=tmp_path, grid=grid)
     ds = read_swan(tmp_path / "westaus.bnd")
     xbnd, ybnd = bnd._boundary_points(grid)
     assert xbnd == pytest.approx(ds.lon.values)
@@ -81,7 +81,7 @@ def test_data_boundary_custom_spacing(tmp_path, time, grid):
         rectangle="closed",
     )
     bnd._filter_time(time=time)
-    bnd.get(stage_dir=tmp_path, grid=grid)
+    bnd.get(destdir=tmp_path, grid=grid)
     ds = read_swan(tmp_path / "westaus.bnd")
     xbnd, ybnd = bnd._boundary_points(grid)
     assert xbnd == pytest.approx(ds.lon.values)
@@ -102,4 +102,19 @@ def test_data_boundary_spacing_lt_perimeter(tmp_path, time, grid):
             rectangle="closed",
         )
         bnd._filter_time(time=time)
-        bnd.get(stage_dir=tmp_path, grid=grid)
+        bnd.get(destdir=tmp_path, grid=grid)
+
+
+def test_source_wavespectra_ploting(tmp_path):
+    Boundnest1(
+        id="westaus",
+        source=SourceFile(
+            uri=HERE / "data/aus-20230101.nc",
+            kwargs=dict(engine="netcdf4"),
+        ),
+        spacing=1,
+        sel_method="idw",
+        tolerance=2.0,
+        rectangle="closed",
+        coords={'x':'lon', 'y': 'lat'}
+    ).plot()
