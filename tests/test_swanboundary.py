@@ -5,7 +5,8 @@ from wavespectra import read_swan
 
 from rompy.core.time import TimeRange
 from rompy.swan.grid import SwanGrid
-from rompy.swan.boundary import SourceFile, SourceIntake, SourceWavespectra, DataBoundary
+from rompy.core.boundary import SourceFile, SourceIntake, SourceWavespectra
+from rompy.swan.boundary import Boundnest1
 
 
 HERE = Path(__file__).parent
@@ -49,7 +50,7 @@ def test_source_intake():
 
 
 def test_data_boundary_spacing_from_dataset(tmp_path, time, grid):
-    bnd = DataBoundary(
+    bnd = Boundnest1(
         id="westaus",
         source=SourceFile(
             uri=HERE / "data/aus-20230101.nc",
@@ -60,7 +61,7 @@ def test_data_boundary_spacing_from_dataset(tmp_path, time, grid):
         rectangle="closed",
     )
     bnd._filter_time(time=time)
-    bnd.get(stage_dir=tmp_path, grid=grid)
+    bnd.get(destdir=tmp_path, grid=grid)
     ds = read_swan(tmp_path / "westaus.bnd")
     xbnd, ybnd = bnd._boundary_points(grid)
     assert xbnd == pytest.approx(ds.lon.values)
@@ -68,7 +69,7 @@ def test_data_boundary_spacing_from_dataset(tmp_path, time, grid):
 
 
 def test_data_boundary_custom_spacing(tmp_path, time, grid):
-    bnd = DataBoundary(
+    bnd = Boundnest1(
         id="westaus",
         source=SourceFile(
             uri=HERE / "data/aus-20230101.nc",
@@ -80,7 +81,7 @@ def test_data_boundary_custom_spacing(tmp_path, time, grid):
         rectangle="closed",
     )
     bnd._filter_time(time=time)
-    bnd.get(stage_dir=tmp_path, grid=grid)
+    bnd.get(destdir=tmp_path, grid=grid)
     ds = read_swan(tmp_path / "westaus.bnd")
     xbnd, ybnd = bnd._boundary_points(grid)
     assert xbnd == pytest.approx(ds.lon.values)
@@ -89,7 +90,7 @@ def test_data_boundary_custom_spacing(tmp_path, time, grid):
 
 def test_data_boundary_spacing_lt_perimeter(tmp_path, time, grid):
     with pytest.raises(ValueError):
-        bnd = DataBoundary(
+        bnd = Boundnest1(
             id="westaus",
             source=SourceFile(
                 uri=HERE / "data/aus-20230101.nc",
@@ -101,11 +102,11 @@ def test_data_boundary_spacing_lt_perimeter(tmp_path, time, grid):
             rectangle="closed",
         )
         bnd._filter_time(time=time)
-        bnd.get(stage_dir=tmp_path, grid=grid)
+        bnd.get(destdir=tmp_path, grid=grid)
 
 
 def test_source_wavespectra_ploting(tmp_path):
-    DataBoundary(
+    Boundnest1(
         id="westaus",
         source=SourceFile(
             uri=HERE / "data/aus-20230101.nc",
