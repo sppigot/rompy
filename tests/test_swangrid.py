@@ -3,6 +3,7 @@ import pytest
 import shapely
 
 from rompy.swan import SwanGrid
+from rompy.swan.subcomponents.readgrid import GRIDREGULAR
 
 
 # test class based on pytest fixtures
@@ -53,3 +54,30 @@ def test_grid_minmax(grid):
 def test_initilisation(grid, grid2):
     assert np.array_equal(grid.x, grid2.x)
     assert np.array_equal(grid.y, grid2.y)
+
+
+def test_component_attribute(grid):
+    regular_grid_component = GRIDREGULAR(
+        xp=grid.x0,
+        yp=grid.y0,
+        alp=grid.rot,
+        xlen=grid.xlen,
+        ylen=grid.ylen,
+        mx=grid.nx - 1,
+        my=grid.ny - 1,
+    )
+    assert grid.component == regular_grid_component
+
+
+def test_grid_from_component(grid):
+    regular_grid_component = GRIDREGULAR(
+        xp=grid.x0,
+        yp=grid.y0,
+        alp=grid.rot,
+        xlen=grid.xlen,
+        ylen=grid.ylen,
+        mx=grid.nx - 1,
+        my=grid.ny - 1,
+    )
+    grid2 = SwanGrid.from_component(regular_grid_component)
+    assert grid == grid2
