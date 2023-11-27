@@ -10,7 +10,7 @@ from rompy.model import ModelRun
 from rompy.core.data import SourceFile
 from rompy.core import TimeRange
 from rompy.core.types import DatasetCoords
-from rompy.swan import DataBoundary, SwanConfig, SwanDataGrid, SwanGrid
+from rompy.swan import Boundnest1, SwanConfig, SwanDataGrid, SwanGrid
 
 HERE = Path(__file__).parent
 
@@ -75,7 +75,7 @@ def nc_bnd(tmpdir, time):
     dset_out["lat"] = dset_out.lat.isel(time=0, drop=True)
     dset_out.to_netcdf(fname)
 
-    bnd = DataBoundary(
+    bnd = Boundnest1(
         id="boundary",
         source=SourceFile(
             uri=fname,
