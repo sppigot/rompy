@@ -58,7 +58,12 @@ def find_minimum_distance(points: list[tuple[float, float]]) -> float:
     left_min = find_minimum_distance(left_points)
     right_min = find_minimum_distance(right_points)
 
-    min_distance = min(left_min, right_min)
+    if left_min == 0.0:
+        min_distance = right_min
+    elif right_min == 0.0:
+        min_distance = left_min
+    else:
+        min_distance = min(left_min, right_min)
 
     # Find the closest pair across the dividing line
     strip = []
@@ -72,7 +77,7 @@ def find_minimum_distance(points: list[tuple[float, float]]) -> float:
         j = i + 1
         while j < strip_len and (strip[j][1] - strip[i][1]) < strip_min:
             distance = calculate_distance(*strip[i], *strip[j])
-            if distance < strip_min:
+            if distance < strip_min and distance != 0.0:
                 strip_min = distance
             j += 1
 
