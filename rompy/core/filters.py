@@ -121,11 +121,19 @@ def crop_filter(ds, **data_slice) -> xr.Dataset:
 
     """
     if data_slice is not None:
-        this_crop = {
-            k: data_slice[k].to_slice()
-            for k in data_slice.keys()
-            if k in ds.dims.keys()
-        }
+        this_crop = {}
+        for k in data_slice.keys():
+            if k in ds.dims.keys():
+                if hasattr(data_slice[k], 'to_slice'):
+                    this_crop[k] = data_slice[k].to_slice()
+                else:
+                    this_crop[k] = data_slice[k]
+
+        #this_crop = {
+        #    k: data_slice[k].to_slice()
+        #    for k in data_slice.keys()
+        #    if k in ds.dims.keys():
+        #}
         ds = ds.sel(this_crop)
         for k in data_slice.keys():
             if (k not in ds.dims.keys()) and (k in ds.coords.keys()):
