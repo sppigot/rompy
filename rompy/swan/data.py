@@ -14,6 +14,8 @@ from rompy.core.time import TimeRange
 from rompy.swan.grid import SwanGrid
 from rompy.swan.types import GridOptions
 
+from shapely.geometry import Polygon
+
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +48,29 @@ class SwanDataGrid(DataGrid):
         ),
         default=1.0,
     )
+    boundary_coord_list: Optional[list] = Field(
+        default=None,
+        description=(
+            "Boundary of swan domain as list of coordinate tuples. "
+            "Will be converted to shapely polygon, densified and points will "
+            "be used to generate TPAR files. "
+            "Only relevant when grid var is 'wavecharacteristics'"
+        ),
+    )
+    interval: float = Field(
+        description=(
+            "Interval (distance) between points that will be added to the boundary. "
+            "Only relevant when grid var is 'wavecharacteristics'"
+        ),
+        default=1.0,
+    )
+
+    @model_validator(mode="after")
+    def ensure_coords_and_interval_if_wavecharacteristics(self) -> "SwanDataGrid":
+        if self.var.value == "wavecharacteristics":
+            if self.boundary_coord_list is None or self.interval is None:
+                raise ValidationError("SwanDataGrid with var 'wavecharacteristics' must specify boundary_coord_list and interval")
+        return self
 
     @model_validator(mode="after")
     def ensure_z1_in_data_vars(self) -> "SwanDataGrid":
@@ -105,6 +130,18 @@ class SwanDataGrid(DataGrid):
                 fac=self.fac,
                 rot=0.0,
                 vmin=float("-inf"),
+            )
+        elif self.var.value == "wavecharacteristics":
+            inpgrid, readgrid = self.ds.swan.to_tpar_boundary(
+                output_file,
+                self.boundary_coord_list,
+                self.interval,
+                x=self.coords.x,
+                y=self.coords.y,
+                hs_var="sig_wav_ht",
+                per_var="pk_wav_per",
+                dir_var="pk_wav_dir",
+                dir_spread=20.0,
             )
         else:
             inpgrid, readgrid = self.ds.swan.to_inpgrid(
@@ -365,11 +402,11 @@ class Swan_accessor(object):
 
     def to_tpar_boundary(
         self,
-        dest_path,
-        boundary,
-        interval,
-        x_var="lon",
-        y_var="lat",
+        output_file:str,
+        boundary_coord_list:list,
+        interval:float,
+        x:str="lon",
+        y:str="lat",
         hs_var="sig_wav_ht",
         per_var="pk_wav_per",
         dir_var="pk_wav_dir",
@@ -385,6 +422,14 @@ class Swan_accessor(object):
         """
         from shapely.ops import substring
 
+        if boundary_coord_list is None:
+            raise ValueError(f"boundary_coord_list must be specified!")
+
+        if interval is None:
+            raise ValueError(f"interval must be specified!")
+
+        boundary = Polygon(boundary_coord_list) 
+
         bound_string = "BOUNDSPEC SEGM XY "
         point_string = "&\n {xp:0.8f} {yp:0.8f} "
         file_string = "&\n {len:0.8f} '{fname}' 1 "
@@ -394,10 +439,11 @@ class Swan_accessor(object):
 
         bound_string += "&\n VAR FILE "
 
-        n_pts = int((boundary.length) / interval)
+        n_pts = int((boundary.exterior.length) / interval)
         splits = np.linspace(0, 1.0, n_pts)
         boundary_points = []
         j = 0
+        logger.debug(f"Found {len(splits)}")
         for i in range(len(splits) - 1):
             segment = substring(
                 boundary.exterior, splits[i], splits[i + 1], normalized=True
@@ -406,11 +452,12 @@ class Swan_accessor(object):
             yp = segment.coords[1][1]
             logger.debug(f"Extracting point: {xp},{yp}")
             ds_point = self._obj.sel(
-                indexers={x_var: xp, y_var: yp}, method="nearest", tolerance=interval
+                indexers={x: xp, y: yp}, method="nearest", tolerance=interval
             )
+            logger.debug(f"Found {len(ds_point.time)} versus {len(self._obj.time)}")
             if len(ds_point.time) == len(self._obj.time):
                 if not np.any(np.isnan(ds_point[hs_var])):
-                    with open(f"{dest_path}/{j}.TPAR", "wt") as f:
+                    with open(f"simulations/swan/{j}.TPAR", "wt") as f:
                         f.write("TPAR\n")
                         for t in range(len(ds_point.time)):
                             ds_row = ds_point.isel(time=t)
@@ -429,8 +476,8 @@ class Swan_accessor(object):
                                 )
                             )
                     bound_string += file_string.format(
-                        len=splits[i + 1] * boundary.length, fname=f"{j}.TPAR"
+                        len=splits[i + 1] * boundary.exterior.length, fname=f"{j}.TPAR"
                     )
                     j += 1
 
-        return bound_string
+        return bound_string, ''

@@ -94,6 +94,7 @@ class GridOptions(str, Enum):
     HICE = "hice"
     HSS = "hss"
     TSS = "tss"
+    WAVECHARACTERISTICS = "wavecharacteristics"
 
 
 class BoundShapeOptions(str, Enum):
