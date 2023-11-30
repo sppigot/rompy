@@ -454,6 +454,8 @@ document.write(`
 <span class="kn">from</span> <span class="nn">rompy.swan.grid</span> <span class="kn">import</span> <span class="n">SwanGrid</span>
 <span class="kn">from</span> <span class="nn">rompy.swan.types</span> <span class="kn">import</span> <span class="n">GridOptions</span>
 
+<span class="kn">from</span> <span class="nn">shapely.geometry</span> <span class="kn">import</span> <span class="n">Polygon</span>
+
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -488,6 +490,32 @@ document.write(`
         <span class="p">),</span>
         <span class="n">default</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
     <span class="p">)</span>
+    <span class="n">boundary_coord_list</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Boundary of swan domain as list of coordinate tuples. &quot;</span>
+            <span class="s2">&quot;Will be converted to shapely polygon, densified and points will &quot;</span>
+            <span class="s2">&quot;be used to generate TPAR files. &quot;</span>
+            <span class="s2">&quot;Only relevant when grid var is &#39;wavecharacteristics&#39;&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">interval</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">description</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Interval (distance) between points that will be added to the boundary. &quot;</span>
+            <span class="s2">&quot;Only relevant when grid var is &#39;wavecharacteristics&#39;&quot;</span>
+        <span class="p">),</span>
+        <span class="n">default</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="p">)</span>
+
+<div class="viewcode-block" id="SwanDataGrid.ensure_coords_and_interval_if_wavecharacteristics">
+<a class="viewcode-back" href="../../../swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.ensure_coords_and_interval_if_wavecharacteristics">[docs]</a>
+    <span class="nd">@model_validator</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;after&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">ensure_coords_and_interval_if_wavecharacteristics</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;SwanDataGrid&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="s2">&quot;wavecharacteristics&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">boundary_coord_list</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">interval</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s2">&quot;SwanDataGrid with var &#39;wavecharacteristics&#39; must specify boundary_coord_list and interval&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
 
 <div class="viewcode-block" id="SwanDataGrid.ensure_z1_in_data_vars">
 <a class="viewcode-back" href="../../../swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.ensure_z1_in_data_vars">[docs]</a>
@@ -552,6 +580,18 @@ document.write(`
                 <span class="n">fac</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fac</span><span class="p">,</span>
                 <span class="n">rot</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
                 <span class="n">vmin</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="s2">&quot;-inf&quot;</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="s2">&quot;wavecharacteristics&quot;</span><span class="p">:</span>
+            <span class="n">inpgrid</span><span class="p">,</span> <span class="n">readgrid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="o">.</span><span class="n">swan</span><span class="o">.</span><span class="n">to_tpar_boundary</span><span class="p">(</span>
+                <span class="n">output_file</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">boundary_coord_list</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">interval</span><span class="p">,</span>
+                <span class="n">x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
+                <span class="n">y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+                <span class="n">hs_var</span><span class="o">=</span><span class="s2">&quot;sig_wav_ht&quot;</span><span class="p">,</span>
+                <span class="n">per_var</span><span class="o">=</span><span class="s2">&quot;pk_wav_per&quot;</span><span class="p">,</span>
+                <span class="n">dir_var</span><span class="o">=</span><span class="s2">&quot;pk_wav_dir&quot;</span><span class="p">,</span>
+                <span class="n">dir_spread</span><span class="o">=</span><span class="mf">20.0</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">inpgrid</span><span class="p">,</span> <span class="n">readgrid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="o">.</span><span class="n">swan</span><span class="o">.</span><span class="n">to_inpgrid</span><span class="p">(</span>
@@ -817,11 +857,11 @@ document.write(`
 
     <span class="k">def</span> <span class="nf">to_tpar_boundary</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">dest_path</span><span class="p">,</span>
-        <span class="n">boundary</span><span class="p">,</span>
-        <span class="n">interval</span><span class="p">,</span>
-        <span class="n">x_var</span><span class="o">=</span><span class="s2">&quot;lon&quot;</span><span class="p">,</span>
-        <span class="n">y_var</span><span class="o">=</span><span class="s2">&quot;lat&quot;</span><span class="p">,</span>
+        <span class="n">output_file</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">boundary_coord_list</span><span class="p">:</span><span class="nb">list</span><span class="p">,</span>
+        <span class="n">interval</span><span class="p">:</span><span class="nb">float</span><span class="p">,</span>
+        <span class="n">x</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="s2">&quot;lon&quot;</span><span class="p">,</span>
+        <span class="n">y</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="s2">&quot;lat&quot;</span><span class="p">,</span>
         <span class="n">hs_var</span><span class="o">=</span><span class="s2">&quot;sig_wav_ht&quot;</span><span class="p">,</span>
         <span class="n">per_var</span><span class="o">=</span><span class="s2">&quot;pk_wav_per&quot;</span><span class="p">,</span>
         <span class="n">dir_var</span><span class="o">=</span><span class="s2">&quot;pk_wav_dir&quot;</span><span class="p">,</span>
@@ -837,6 +877,14 @@ document.write(`
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="kn">from</span> <span class="nn">shapely.ops</span> <span class="kn">import</span> <span class="n">substring</span>
 
+        <span class="k">if</span> <span class="n">boundary_coord_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;boundary_coord_list must be specified!&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">interval</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;interval must be specified!&quot;</span><span class="p">)</span>
+
+        <span class="n">boundary</span> <span class="o">=</span> <span class="n">Polygon</span><span class="p">(</span><span class="n">boundary_coord_list</span><span class="p">)</span> 
+
         <span class="n">bound_string</span> <span class="o">=</span> <span class="s2">&quot;BOUNDSPEC SEGM XY &quot;</span>
         <span class="n">point_string</span> <span class="o">=</span> <span class="s2">&quot;&amp;</span><span class="se">\n</span><span class="s2"> </span><span class="si">{xp:0.8f}</span><span class="s2"> </span><span class="si">{yp:0.8f}</span><span class="s2"> &quot;</span>
         <span class="n">file_string</span> <span class="o">=</span> <span class="s2">&quot;&amp;</span><span class="se">\n</span><span class="s2"> </span><span class="si">{len:0.8f}</span><span class="s2"> &#39;</span><span class="si">{fname}</span><span class="s2">&#39; 1 &quot;</span>
@@ -846,10 +894,11 @@ document.write(`
 
         <span class="n">bound_string</span> <span class="o">+=</span> <span class="s2">&quot;&amp;</span><span class="se">\n</span><span class="s2"> VAR FILE &quot;</span>
 
-        <span class="n">n_pts</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">boundary</span><span class="o">.</span><span class="n">length</span><span class="p">)</span> <span class="o">/</span> <span class="n">interval</span><span class="p">)</span>
+        <span class="n">n_pts</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">boundary</span><span class="o">.</span><span class="n">exterior</span><span class="o">.</span><span class="n">length</span><span class="p">)</span> <span class="o">/</span> <span class="n">interval</span><span class="p">)</span>
         <span class="n">splits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">n_pts</span><span class="p">)</span>
         <span class="n">boundary_points</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">splits</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">splits</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
             <span class="n">segment</span> <span class="o">=</span> <span class="n">substring</span><span class="p">(</span>
                 <span class="n">boundary</span><span class="o">.</span><span class="n">exterior</span><span class="p">,</span> <span class="n">splits</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">splits</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">True</span>
@@ -858,11 +907,12 @@ document.write(`
             <span class="n">yp</span> <span class="o">=</span> <span class="n">segment</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Extracting point: </span><span class="si">{</span><span class="n">xp</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">yp</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">ds_point</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_obj</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span>
-                <span class="n">indexers</span><span class="o">=</span><span class="p">{</span><span class="n">x_var</span><span class="p">:</span> <span class="n">xp</span><span class="p">,</span> <span class="n">y_var</span><span class="p">:</span> <span class="n">yp</span><span class="p">},</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="n">interval</span>
+                <span class="n">indexers</span><span class="o">=</span><span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="n">xp</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">yp</span><span class="p">},</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="n">interval</span>
             <span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">ds_point</span><span class="o">.</span><span class="n">time</span><span class="p">)</span><span class="si">}</span><span class="s2"> versus </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_obj</span><span class="o">.</span><span class="n">time</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ds_point</span><span class="o">.</span><span class="n">time</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_obj</span><span class="o">.</span><span class="n">time</span><span class="p">):</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">ds_point</span><span class="p">[</span><span class="n">hs_var</span><span class="p">])):</span>
-                    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dest_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">j</span><span class="si">}</span><span class="s2">.TPAR&quot;</span><span class="p">,</span> <span class="s2">&quot;wt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;simulations/swan/</span><span class="si">{</span><span class="n">j</span><span class="si">}</span><span class="s2">.TPAR&quot;</span><span class="p">,</span> <span class="s2">&quot;wt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                         <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;TPAR</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
                         <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ds_point</span><span class="o">.</span><span class="n">time</span><span class="p">)):</span>
                             <span class="n">ds_row</span> <span class="o">=</span> <span class="n">ds_point</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">t</span><span class="p">)</span>
@@ -881,11 +931,11 @@ document.write(`
                                 <span class="p">)</span>
                             <span class="p">)</span>
                     <span class="n">bound_string</span> <span class="o">+=</span> <span class="n">file_string</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                        <span class="nb">len</span><span class="o">=</span><span class="n">splits</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">boundary</span><span class="o">.</span><span class="n">length</span><span class="p">,</span> <span class="n">fname</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">j</span><span class="si">}</span><span class="s2">.TPAR&quot;</span>
+                        <span class="nb">len</span><span class="o">=</span><span class="n">splits</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">boundary</span><span class="o">.</span><span class="n">exterior</span><span class="o">.</span><span class="n">length</span><span class="p">,</span> <span class="n">fname</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">j</span><span class="si">}</span><span class="s2">.TPAR&quot;</span>
                     <span class="p">)</span>
                     <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
 
-        <span class="k">return</span> <span class="n">bound_string</span>
+        <span class="k">return</span> <span class="n">bound_string</span><span class="p">,</span> <span class="s1">&#39;&#39;</span>
 </pre></div>
 
                 </article>

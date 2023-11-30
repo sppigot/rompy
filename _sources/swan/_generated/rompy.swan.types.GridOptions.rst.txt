@@ -33,5 +33,6 @@
       ~GridOptions.HICE
       ~GridOptions.HSS
       ~GridOptions.TSS
+      ~GridOptions.WAVECHARACTERISTICS
    
    

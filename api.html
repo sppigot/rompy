@@ -780,7 +780,7 @@ beyond the arguments provided by the user..</p>
 
 <dl class="py method pydantic_validator">
 <dt class="sig sig-object py">
-<em class="property"><span class="pre">validator</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">valid_duration_interval</span></span><em class="autodoc_pydantic_validator_arrow property">&#160; <span class="pre">»</span>&#160; </em><em class="xref py py-obj"><span class="pre">duration</span></em><em class="property"><span class="pre">,</span> </em><em class="xref py py-obj"><span class="pre">interval</span></em><a class="reference internal" href="_modules/rompy/core/time.html#TimeRange.valid_duration_interval"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<em class="property"><span class="pre">validator</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">valid_duration_interval</span></span><em class="autodoc_pydantic_validator_arrow property">&#160; <span class="pre">»</span>&#160; </em><em class="xref py py-obj"><span class="pre">interval</span></em><em class="property"><span class="pre">,</span> </em><em class="xref py py-obj"><span class="pre">duration</span></em><a class="reference internal" href="_modules/rompy/core/time.html#TimeRange.valid_duration_interval"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd></dd></dl>
 
 <dl class="py method pydantic_validator">
@@ -3095,12 +3095,14 @@ functions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Fields<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.boundary_coord_list" title="rompy.swan.data.SwanDataGrid.boundary_coord_list"><code class="xref py py-obj docutils literal notranslate"><span class="pre">boundary_coord_list</span> <span class="pre">(list</span> <span class="pre">|</span> <span class="pre">None)</span></code></a></p></li>
 <li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.buffer" title="rompy.swan.data.SwanDataGrid.buffer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">buffer</span> <span class="pre">()</span></code></a></p></li>
 <li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.coords" title="rompy.swan.data.SwanDataGrid.coords"><code class="xref py py-obj docutils literal notranslate"><span class="pre">coords</span> <span class="pre">()</span></code></a></p></li>
 <li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.crop_data" title="rompy.swan.data.SwanDataGrid.crop_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crop_data</span> <span class="pre">()</span></code></a></p></li>
 <li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.fac" title="rompy.swan.data.SwanDataGrid.fac"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fac</span> <span class="pre">(float)</span></code></a></p></li>
 <li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.filter" title="rompy.swan.data.SwanDataGrid.filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filter</span> <span class="pre">()</span></code></a></p></li>
 <li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.id" title="rompy.swan.data.SwanDataGrid.id"><code class="xref py py-obj docutils literal notranslate"><span class="pre">id</span> <span class="pre">()</span></code></a></p></li>
+<li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.interval" title="rompy.swan.data.SwanDataGrid.interval"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interval</span> <span class="pre">(float)</span></code></a></p></li>
 <li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.model_type" title="rompy.swan.data.SwanDataGrid.model_type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">model_type</span> <span class="pre">()</span></code></a></p></li>
 <li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.source" title="rompy.swan.data.SwanDataGrid.source"><code class="xref py py-obj docutils literal notranslate"><span class="pre">source</span> <span class="pre">()</span></code></a></p></li>
 <li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.var" title="rompy.swan.data.SwanDataGrid.var"><code class="xref py py-obj docutils literal notranslate"><span class="pre">var</span> <span class="pre">(rompy.swan.types.GridOptions)</span></code></a></p></li>
@@ -3111,10 +3113,25 @@ functions.</p>
 </dd>
 <dt class="field-even">Validators<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.ensure_coords_and_interval_if_wavecharacteristics" title="rompy.swan.data.SwanDataGrid.ensure_coords_and_interval_if_wavecharacteristics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_coords_and_interval_if_wavecharacteristics</span></code></a> » <code class="xref py py-obj docutils literal notranslate"><span class="pre">all</span> <span class="pre">fields</span></code></p></li>
 <li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.ensure_z1_in_data_vars" title="rompy.swan.data.SwanDataGrid.ensure_z1_in_data_vars"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_z1_in_data_vars</span></code></a> » <code class="xref py py-obj docutils literal notranslate"><span class="pre">all</span> <span class="pre">fields</span></code></p></li>
 </ul>
 </dd>
 </dl>
+<dl class="py attribute pydantic_field">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">boundary_coord_list</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em></dt>
+<dd><p>Boundary of swan domain as list of coordinate tuples. Will be converted to shapely polygon, densified and points will be used to generate TPAR files. Only relevant when grid var is ‘wavecharacteristics’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Validated by<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.ensure_coords_and_interval_if_wavecharacteristics" title="rompy.swan.data.SwanDataGrid.ensure_coords_and_interval_if_wavecharacteristics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_coords_and_interval_if_wavecharacteristics</span></code></a></p></li>
+<li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.ensure_z1_in_data_vars" title="rompy.swan.data.SwanDataGrid.ensure_z1_in_data_vars"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_z1_in_data_vars</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py attribute pydantic_field">
 <dt class="sig sig-object py">
 <em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">buffer</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0</span></em></dt>
@@ -3122,6 +3139,7 @@ functions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Validated by<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.ensure_coords_and_interval_if_wavecharacteristics" title="rompy.swan.data.SwanDataGrid.ensure_coords_and_interval_if_wavecharacteristics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_coords_and_interval_if_wavecharacteristics</span></code></a></p></li>
 <li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.ensure_z1_in_data_vars" title="rompy.swan.data.SwanDataGrid.ensure_z1_in_data_vars"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_z1_in_data_vars</span></code></a></p></li>
 </ul>
 </dd>
@@ -3135,6 +3153,7 @@ functions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Validated by<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.ensure_coords_and_interval_if_wavecharacteristics" title="rompy.swan.data.SwanDataGrid.ensure_coords_and_interval_if_wavecharacteristics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_coords_and_interval_if_wavecharacteristics</span></code></a></p></li>
 <li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.ensure_z1_in_data_vars" title="rompy.swan.data.SwanDataGrid.ensure_z1_in_data_vars"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_z1_in_data_vars</span></code></a></p></li>
 </ul>
 </dd>
@@ -3148,6 +3167,7 @@ functions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Validated by<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.ensure_coords_and_interval_if_wavecharacteristics" title="rompy.swan.data.SwanDataGrid.ensure_coords_and_interval_if_wavecharacteristics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_coords_and_interval_if_wavecharacteristics</span></code></a></p></li>
 <li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.ensure_z1_in_data_vars" title="rompy.swan.data.SwanDataGrid.ensure_z1_in_data_vars"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_z1_in_data_vars</span></code></a></p></li>
 </ul>
 </dd>
@@ -3161,6 +3181,7 @@ functions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Validated by<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.ensure_coords_and_interval_if_wavecharacteristics" title="rompy.swan.data.SwanDataGrid.ensure_coords_and_interval_if_wavecharacteristics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_coords_and_interval_if_wavecharacteristics</span></code></a></p></li>
 <li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.ensure_z1_in_data_vars" title="rompy.swan.data.SwanDataGrid.ensure_z1_in_data_vars"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_z1_in_data_vars</span></code></a></p></li>
 </ul>
 </dd>
@@ -3174,6 +3195,7 @@ functions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Validated by<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.ensure_coords_and_interval_if_wavecharacteristics" title="rompy.swan.data.SwanDataGrid.ensure_coords_and_interval_if_wavecharacteristics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_coords_and_interval_if_wavecharacteristics</span></code></a></p></li>
 <li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.ensure_z1_in_data_vars" title="rompy.swan.data.SwanDataGrid.ensure_z1_in_data_vars"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_z1_in_data_vars</span></code></a></p></li>
 </ul>
 </dd>
@@ -3187,6 +3209,21 @@ functions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Validated by<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.ensure_coords_and_interval_if_wavecharacteristics" title="rompy.swan.data.SwanDataGrid.ensure_coords_and_interval_if_wavecharacteristics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_coords_and_interval_if_wavecharacteristics</span></code></a></p></li>
+<li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.ensure_z1_in_data_vars" title="rompy.swan.data.SwanDataGrid.ensure_z1_in_data_vars"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_z1_in_data_vars</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute pydantic_field">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">field</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">interval</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.0</span></em></dt>
+<dd><p>Interval (distance) between points that will be added to the boundary. Only relevant when grid var is ‘wavecharacteristics’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Validated by<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.ensure_coords_and_interval_if_wavecharacteristics" title="rompy.swan.data.SwanDataGrid.ensure_coords_and_interval_if_wavecharacteristics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_coords_and_interval_if_wavecharacteristics</span></code></a></p></li>
 <li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.ensure_z1_in_data_vars" title="rompy.swan.data.SwanDataGrid.ensure_z1_in_data_vars"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_z1_in_data_vars</span></code></a></p></li>
 </ul>
 </dd>
@@ -3200,6 +3237,7 @@ functions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Validated by<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.ensure_coords_and_interval_if_wavecharacteristics" title="rompy.swan.data.SwanDataGrid.ensure_coords_and_interval_if_wavecharacteristics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_coords_and_interval_if_wavecharacteristics</span></code></a></p></li>
 <li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.ensure_z1_in_data_vars" title="rompy.swan.data.SwanDataGrid.ensure_z1_in_data_vars"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_z1_in_data_vars</span></code></a></p></li>
 </ul>
 </dd>
@@ -3213,6 +3251,7 @@ functions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Validated by<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.ensure_coords_and_interval_if_wavecharacteristics" title="rompy.swan.data.SwanDataGrid.ensure_coords_and_interval_if_wavecharacteristics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_coords_and_interval_if_wavecharacteristics</span></code></a></p></li>
 <li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.ensure_z1_in_data_vars" title="rompy.swan.data.SwanDataGrid.ensure_z1_in_data_vars"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_z1_in_data_vars</span></code></a></p></li>
 </ul>
 </dd>
@@ -3226,6 +3265,7 @@ functions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Validated by<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.ensure_coords_and_interval_if_wavecharacteristics" title="rompy.swan.data.SwanDataGrid.ensure_coords_and_interval_if_wavecharacteristics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_coords_and_interval_if_wavecharacteristics</span></code></a></p></li>
 <li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.ensure_z1_in_data_vars" title="rompy.swan.data.SwanDataGrid.ensure_z1_in_data_vars"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_z1_in_data_vars</span></code></a></p></li>
 </ul>
 </dd>
@@ -3239,6 +3279,7 @@ functions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Validated by<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.ensure_coords_and_interval_if_wavecharacteristics" title="rompy.swan.data.SwanDataGrid.ensure_coords_and_interval_if_wavecharacteristics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_coords_and_interval_if_wavecharacteristics</span></code></a></p></li>
 <li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.ensure_z1_in_data_vars" title="rompy.swan.data.SwanDataGrid.ensure_z1_in_data_vars"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_z1_in_data_vars</span></code></a></p></li>
 </ul>
 </dd>
@@ -3252,6 +3293,7 @@ functions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Validated by<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.ensure_coords_and_interval_if_wavecharacteristics" title="rompy.swan.data.SwanDataGrid.ensure_coords_and_interval_if_wavecharacteristics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_coords_and_interval_if_wavecharacteristics</span></code></a></p></li>
 <li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.ensure_z1_in_data_vars" title="rompy.swan.data.SwanDataGrid.ensure_z1_in_data_vars"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_z1_in_data_vars</span></code></a></p></li>
 </ul>
 </dd>
@@ -3265,11 +3307,17 @@ functions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Validated by<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.ensure_coords_and_interval_if_wavecharacteristics" title="rompy.swan.data.SwanDataGrid.ensure_coords_and_interval_if_wavecharacteristics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_coords_and_interval_if_wavecharacteristics</span></code></a></p></li>
 <li><p><a class="reference internal" href="swan/_generated/rompy.swan.data.SwanDataGrid.html#rompy.swan.data.SwanDataGrid.ensure_z1_in_data_vars" title="rompy.swan.data.SwanDataGrid.ensure_z1_in_data_vars"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_z1_in_data_vars</span></code></a></p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="py method pydantic_validator">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">validator</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ensure_coords_and_interval_if_wavecharacteristics</span></span><em class="autodoc_pydantic_validator_arrow property">&#160; <span class="pre">»</span>&#160; </em><em class="xref py py-obj"><span class="pre">all</span> <span class="pre">fields</span></em><a class="reference internal" href="_modules/rompy/swan/data.html#SwanDataGrid.ensure_coords_and_interval_if_wavecharacteristics"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd></dd></dl>
 
 <dl class="py method pydantic_validator">
 <dt class="sig sig-object py">
@@ -12445,7 +12493,7 @@ Jacobsen et al. (2019) method.</p>
 
 <dl class="py method pydantic_validator">
 <dt class="sig sig-object py">
-<em class="property"><span class="pre">validator</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">number_of_layers</span></span><em class="autodoc_pydantic_validator_arrow property">&#160; <span class="pre">»</span>&#160; </em><a class="reference internal" href="swan/components/_generated/rompy.swan.components.physics.VEGETATION.html#rompy.swan.components.physics.VEGETATION.diamtr" title="rompy.swan.components.physics.VEGETATION.diamtr"><em class="xref py py-obj"><span class="pre">diamtr</span></em></a><em class="property"><span class="pre">,</span> </em><a class="reference internal" href="swan/components/_generated/rompy.swan.components.physics.VEGETATION.html#rompy.swan.components.physics.VEGETATION.nstems" title="rompy.swan.components.physics.VEGETATION.nstems"><em class="xref py py-obj"><span class="pre">nstems</span></em></a><em class="property"><span class="pre">,</span> </em><a class="reference internal" href="swan/components/_generated/rompy.swan.components.physics.VEGETATION.html#rompy.swan.components.physics.VEGETATION.height" title="rompy.swan.components.physics.VEGETATION.height"><em class="xref py py-obj"><span class="pre">height</span></em></a><em class="property"><span class="pre">,</span> </em><a class="reference internal" href="swan/components/_generated/rompy.swan.components.physics.VEGETATION.html#rompy.swan.components.physics.VEGETATION.drag" title="rompy.swan.components.physics.VEGETATION.drag"><em class="xref py py-obj"><span class="pre">drag</span></em></a><a class="reference internal" href="_modules/rompy/swan/components/physics.html#VEGETATION.number_of_layers"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<em class="property"><span class="pre">validator</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">number_of_layers</span></span><em class="autodoc_pydantic_validator_arrow property">&#160; <span class="pre">»</span>&#160; </em><a class="reference internal" href="swan/components/_generated/rompy.swan.components.physics.VEGETATION.html#rompy.swan.components.physics.VEGETATION.height" title="rompy.swan.components.physics.VEGETATION.height"><em class="xref py py-obj"><span class="pre">height</span></em></a><em class="property"><span class="pre">,</span> </em><a class="reference internal" href="swan/components/_generated/rompy.swan.components.physics.VEGETATION.html#rompy.swan.components.physics.VEGETATION.drag" title="rompy.swan.components.physics.VEGETATION.drag"><em class="xref py py-obj"><span class="pre">drag</span></em></a><em class="property"><span class="pre">,</span> </em><a class="reference internal" href="swan/components/_generated/rompy.swan.components.physics.VEGETATION.html#rompy.swan.components.physics.VEGETATION.nstems" title="rompy.swan.components.physics.VEGETATION.nstems"><em class="xref py py-obj"><span class="pre">nstems</span></em></a><em class="property"><span class="pre">,</span> </em><a class="reference internal" href="swan/components/_generated/rompy.swan.components.physics.VEGETATION.html#rompy.swan.components.physics.VEGETATION.diamtr" title="rompy.swan.components.physics.VEGETATION.diamtr"><em class="xref py py-obj"><span class="pre">diamtr</span></em></a><a class="reference internal" href="_modules/rompy/swan/components/physics.html#VEGETATION.number_of_layers"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
