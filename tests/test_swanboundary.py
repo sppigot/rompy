@@ -63,7 +63,7 @@ def test_data_boundary_spacing_from_dataset(tmp_path, time, grid):
     bnd._filter_time(time=time)
     bnd.get(destdir=tmp_path, grid=grid)
     ds = read_swan(tmp_path / "westaus.bnd")
-    xbnd, ybnd = bnd._boundary_points(grid)
+    xbnd, ybnd = grid.boundary_points()
     assert xbnd == pytest.approx(ds.lon.values)
     assert ybnd == pytest.approx(ds.lat.values)
 
@@ -83,7 +83,7 @@ def test_data_boundary_custom_spacing(tmp_path, time, grid):
     bnd._filter_time(time=time)
     bnd.get(destdir=tmp_path, grid=grid)
     ds = read_swan(tmp_path / "westaus.bnd")
-    xbnd, ybnd = bnd._boundary_points(grid)
+    xbnd, ybnd = grid.boundary_points(spacing=1)
     assert xbnd == pytest.approx(ds.lon.values)
     assert ybnd == pytest.approx(ds.lat.values)
 
