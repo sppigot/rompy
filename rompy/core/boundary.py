@@ -254,6 +254,10 @@ class BoundaryWaveStation(DataBoundary):
             "Wavespectra method to use for selecting boundary points from the dataset"
         ),
     )
+    tolerance: float = Field(
+        default=3.0,
+        description=( "Tolerance used to find spectra sites - see documentation for details" )
+        )
 
     @model_validator(mode="after")
     def assert_has_wavespectra_accessor(self) -> "BoundaryWaveStation":
@@ -288,6 +292,7 @@ class BoundaryWaveStation(DataBoundary):
         ds = self.ds.spec.sel(
             lons=xbnd,
             lats=ybnd,
+            tolerance=self.tolerance,
             method=self.sel_method,
             **self.sel_method_kwargs,
         )
