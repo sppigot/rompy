@@ -1,5 +1,7 @@
 import logging
 from pathlib import Path
+from datetime import datetime
+
 from typing import Annotated, Literal, Optional, Union
 
 from pydantic import Field, PrivateAttr, model_validator
@@ -44,7 +46,15 @@ class SchismCSIROConfig(BaseConfig):
     )
     grid: SCHISMGrid = Field(description="The model grid")
     data: SCHISMData = Field(description="Model inputs")
-    project: str = Field("WAXA", description="TODO")
+
+    # metadata
+    project: str = Field("ROAM Next Gen Littoral Prediction", description="TODO")
+    title: str = Field("ROAM-Littoral", description="TODO")
+    summary: str = Field(" ", description="TODO")
+    date_created: datetime = Field(default_factory=datetime.now) 
+    creator_name: str = Field("sa-littoral", description="Name of the creator")
+    creator_email: str = Field(description="Email address of creator")
+
     utc_start: int = Field(0, description="TODO")
     time_step: float = Field(120.0, description="TODO")
     msc2: int = Field(
