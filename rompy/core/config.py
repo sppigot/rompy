@@ -1,6 +1,7 @@
 import logging
 from pathlib import Path
 from typing import Literal, Optional
+from datetime import datetime
 
 from pydantic import ConfigDict, Field
 
@@ -40,6 +41,16 @@ class BaseConfig(RompyBaseModel):
         description="The git branch to use if the template is a git repo",
         default="main",
     )
+
+    # common metadata
+    project: str = Field("ROAM Next Gen Littoral Prediction", description="Description of the project that has set up this run")
+    title: str = Field("ROAM-Littoral", description="Name of the specific run")
+    summary: str = Field(" ", description="Summary of information about the run")
+    date_created: datetime = Field(default_factory=datetime.now) 
+    creator_name: str = Field("sa-littoral", description="Name of the creator")
+    creator_email: str = Field("roam@csiro.au", description="Email address of creator")
+    model_version: str = Field(" ", description="Model name and version")
+
     model_config = ConfigDict(extra="allow")
 
     def __call__(self, *args, **kwargs):
