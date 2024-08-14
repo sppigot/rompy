@@ -272,7 +272,7 @@ class RegularGrid(BaseGrid):
         y = gg[:, 1] + self.y0
 
         x = np.reshape(x, ii.shape)
-        y = np.reshape(y, ii.shape)
+        y = np.reshape(y, jj.shape)
         return x, y
 
     def __eq__(self, other) -> bool:
